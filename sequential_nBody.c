@@ -10,6 +10,7 @@
 
 typedef struct { float x, y, z, vx, vy, vz; } Body;
 
+/*Function that initializes the array of particles*/
 void randomizeBodies(float *data, int n) {
   for (int i = 0; i < n; i++) {
     data[i] = 2.0f * (rand() / (float)RAND_MAX) - 1.0f;
