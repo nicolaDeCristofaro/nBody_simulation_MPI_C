@@ -39,7 +39,7 @@ void bodyForce(Body *p, float dt, int n) {
 
 int main(const int argc, const char** argv) {
   
-  int nBodies = 10000;  //number of bodies if no paramters is given from command-line
+  int nBodies = 10;  //number of bodies if no paramters is given from command-line
   if (argc > 1) nBodies = atoi(argv[1]);
 
   const float dt = 0.01f; // time step
@@ -50,6 +50,16 @@ int main(const int argc, const char** argv) {
   Body *p = (Body*)buf;
 
   randomizeBodies(buf, 6*nBodies); // Init pos / vel data
+
+  /*printf("Print the array of bodies initialized\n");
+  for(int i=0; i< nBodies; i++){
+    printf("[%d].x = %.2f\n", i, p[i].x);
+    printf("[%d].y = %.2f\n", i, p[i].y);
+    printf("[%d].z = %.2f\n", i, p[i].z);
+    printf("[%d].vx = %.2f\n", i, p[i].vx);
+    printf("[%d].vy = %.2f\n", i, p[i].vy);
+    printf("[%d].vz = %.2f\n", i, p[i].vz);
+  }*/
 
   clock_t start;
   clock_t end;
@@ -72,10 +82,22 @@ int main(const int argc, const char** argv) {
     if (iter > 1) { // First iter is warm up
       totalTime += (double)end/CLOCKS_PER_SEC; 
     }
+
   }
+  
   double avgTime = totalTime / (double)(nIters-1); 
   printf("Total time: %f seconds\n", totalTime);
   printf("Avg time: %f seconds\n", avgTime);
+
+  printf("Print the array of bodies OUTPUT\n");
+  for(int i=0; i< nBodies; i++){
+    printf("[%d].x = %.2f\n", i, p[i].x);
+    printf("[%d].y = %.2f\n", i, p[i].y);
+    printf("[%d].z = %.2f\n", i, p[i].z);
+    printf("[%d].vx = %.2f\n", i, p[i].vx);
+    printf("[%d].vy = %.2f\n", i, p[i].vy);
+    printf("[%d].vz = %.2f\n", i, p[i].vz);
+  }
 
   free(buf);
 }
