@@ -16,7 +16,7 @@ void randomizeBodies(float *data, int n) {
   }
 }
 
-
+/*Function that make computation*/
 void bodyForce(Body *p, float dt, int n) {
   for (int i = 0; i < n; i++) { 
     float Fx = 0.0f; float Fy = 0.0f; float Fz = 0.0f;
