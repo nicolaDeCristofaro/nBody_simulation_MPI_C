@@ -18,7 +18,6 @@ void randomizeBodies(float *data, int n) {
 
 
 void bodyForce(Body *p, float dt, int n) {
-  //#pragma omp parallel for schedule(dynamic)
   for (int i = 0; i < n; i++) { 
     float Fx = 0.0f; float Fy = 0.0f; float Fz = 0.0f;
 
