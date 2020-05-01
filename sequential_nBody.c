@@ -39,7 +39,7 @@ void bodyForce(Body *p, float dt, int n) {
 
 int main(const int argc, const char** argv) {
   
-  int nBodies = 10000;
+  int nBodies = 10000;  //number of bodies if no paramters is given from command-line
   if (argc > 1) nBodies = atoi(argv[1]);
 
   const float dt = 0.01f; // time step
