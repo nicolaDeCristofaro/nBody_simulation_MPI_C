@@ -116,14 +116,14 @@ int main(int argc, char* argv[]){
        srand(myrank);
        randomizeParticles(particles,num_particles);
 
-        // TEST: decommenta per stampare il valore iniziale delle particelle
+        /* TEST: decommenta per scrivere su stdout il valore iniziale delle particelle
         printf("INPUT\n");
         for (int i = 0  ; i < num_particles; i++) { 
             printf("[%d].x = %f\t", i, particles[i].x);
             printf("[%d].y = %f\t", i, particles[i].y);
             printf("[%d].z = %f\t", i, particles[i].z);
             printf("\n");
-        }
+        }*/
     }
 
 
@@ -215,14 +215,14 @@ int main(int argc, char* argv[]){
         printf("Avg iteration time: %f seconds\n", avgTime);
         printf("Total time: %f\n", totalTime);
 
-        // TEST: decommenta per scrivere su stdout lo stato delle particelle dopo la computazione
+        /* TEST: decommenta per scrivere su stdout lo stato finale delle particelle dopo la computazione
         printf("\nOUTPUT\n");
         for (int i = 0  ; i < num_particles; i++) { 
             printf("[%d].x = %f\t", i, gathered_particles[i].x);
             printf("[%d].y = %f\t", i, gathered_particles[i].y);
             printf("[%d].z = %f\t", i, gathered_particles[i].z);
             printf("\n");
-        }
+        }*/
 	    
         free(particles);
 	    free(gathered_particles);	

@@ -52,13 +52,14 @@ int main(const int argc, const char** argv) {
   srand (0);
   randomizeBodies(buf, 6*nBodies); // Init pos / vel data
 
+  /*INPUT TEST
   printf("INPUT\n");
   for(int i=0; i< nBodies; i++){
     printf("[%d].x = %f  ", i, p[i].x);
     printf("[%d].y = %f  ", i, p[i].y);
     printf("[%d].z = %f  ", i, p[i].z);
     printf("\n");
-  }
+  }*/
 
   clock_t start;
   clock_t end;
@@ -78,9 +79,7 @@ int main(const int argc, const char** argv) {
     end = clock() - start;
 
     printf("Iteration %d: %f seconds\n", iter, (double)end/CLOCKS_PER_SEC);
-    if (iter > 1) { // First iter is warm up
-      totalTime += (double)end/CLOCKS_PER_SEC; 
-    }
+    totalTime += (double)end/CLOCKS_PER_SEC; 
 
   }
   
@@ -88,13 +87,14 @@ int main(const int argc, const char** argv) {
   printf("Total time: %f seconds\n", totalTime);
   printf("Avg time: %f seconds\n", avgTime);
 
+  /*OUTPUT TEST
   printf("OUTPUT\n");
   for(int i=0; i< nBodies; i++){
     printf("[%d].x = %f  ", i, p[i].x);
     printf("[%d].y = %f  ", i, p[i].y);
     printf("[%d].z = %f  ", i, p[i].z);
     printf("\n");
-  }
+  }*/
 
   free(buf);
 }
