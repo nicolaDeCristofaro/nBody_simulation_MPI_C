@@ -63,24 +63,33 @@ int main(const int argc, const char **argv){
   const float dt = 0.01f; // time step
   const int nIters = 10;  // simulation iterations
 
-  int bytes = nBodies * sizeof(Particle);
-  float *buf = (float *)malloc(bytes);
-  Particle *p = (Particle *)buf;
+  Particle *particles = NULL;
+  particles = (Particle*) malloc(nBodies * sizeof(Particle));
 
   srand(0);
-  randomizeParticles(p, nBodies);
+  randomizeParticles(particles, nBodies);
 
   /*INPUT TEST
   printf("INPUT\n");
   for(int i=0; i< nBodies; i++){
-    printf("[%d].x = %f  ", i, p[i].x);
-    printf("[%d].y = %f  ", i, p[i].y);
-    printf("[%d].z = %f  ", i, p[i].z);
-    printf("[%d].vx = %f  ", i, p[i].vx);
-    printf("[%d].vy = %f  ", i, p[i].vy);
-    printf("[%d].vz = %f  ", i, p[i].vz);
+    printf("[%d].x = %f  ", i, particles[i].x);
+    printf("[%d].y = %f  ", i, particles[i].y);
+    printf("[%d].z = %f  ", i, particles[i].z);
+    printf("[%d].vx = %f  ", i, particles[i].vx);
+    printf("[%d].vy = %f  ", i, particles[i].vy);
+    printf("[%d].vz = %f  ", i, particles[i].vz);
     printf("\n");
   }*/
+
+  /*FILE *fileRead = fopen("particles.dat", "r");
+  if (fileRead == NULL){
+      /* Impossibile aprire il file 
+      printf("\nImpossibile aprire il file.\n");
+      exit(EXIT_FAILURE);
+  }
+
+  fread(particles, sizeof(Particle) * nBodies, 1, fileRead);
+  fclose(fileRead);*/
 
   clock_t start;
   clock_t end;
@@ -89,12 +98,12 @@ int main(const int argc, const char **argv){
   for (int iter = 1; iter <= nIters; iter++){
     start = clock();
 
-    bodyForce(p, dt, nBodies); // compute interbody forces
+    bodyForce(particles, dt, nBodies); // compute interbody forces
 
     for (int i = 0; i < nBodies; i++){ // integrate position
-      p[i].x += p[i].vx * dt;
-      p[i].y += p[i].vy * dt;
-      p[i].z += p[i].vz * dt;
+      particles[i].x += particles[i].vx * dt;
+      particles[i].y += particles[i].vy * dt;
+      particles[i].z += particles[i].vz * dt;
     }
 
     end = clock() - start;
@@ -111,21 +120,21 @@ int main(const int argc, const char **argv){
   printf("OUTPUT\n");
   for (int i = 0; i < nBodies; i++)
   {
-    printf("[%d].x = %f  ", i, p[i].x);
-    printf("[%d].y = %f  ", i, p[i].y);
-    printf("[%d].z = %f  ", i, p[i].z);
-    printf("[%d].vx = %f  ", i, p[i].vx);
-    printf("[%d].vy = %f  ", i, p[i].vy);
-    printf("[%d].vz = %f  ", i, p[i].vz);
+    printf("[%d].x = %f  ", i, particles[i].x);
+    printf("[%d].y = %f  ", i, particles[i].y);
+    printf("[%d].z = %f  ", i, particles[i].z);
+    printf("[%d].vx = %f  ", i, particles[i].vx);
+    printf("[%d].vy = %f  ", i, particles[i].vy);
+    printf("[%d].vz = %f  ", i, particles[i].vz);
     printf("\n");
   }*/
 
   /*Scrivo l'output su file per poi poterne valutare la correttenza confrontando con l'output parallelo*/
-  FILE *file = fopen("sequential_output.txt", "wb");
-  if (file != NULL){
-    fwrite(p, sizeof(Particle) * nBodies, 1, file);
-    fclose(file);
+  FILE *fileWrite = fopen("sequential_output.txt", "w");
+  if (fileWrite != NULL){
+    fwrite(particles, sizeof(Particle) * nBodies, 1, fileWrite);
+    fclose(fileWrite);
   }
 
-  free(buf);
+  free(particles);
 }

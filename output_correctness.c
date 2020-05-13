@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
+#include <float.h>
 
 typedef struct{
     float mass;
@@ -7,9 +9,13 @@ typedef struct{
     float vx, vy, vz;
 } Particle;
 
+
 //confronta due float e ritorna 1 se sono uguali 0 altrimenti
 int compare_float(float f1, float f2){
-    float precision = 0.000001;
+
+    float precision = 0.01f;
+    //if( (fabs(f1 - f2)) <= precision) return 1;
+    //else return 0;
     if (((f1 - precision) < f2) &&
         ((f1 + precision) > f2))
         return 1;
@@ -21,10 +27,14 @@ int compare_float(float f1, float f2){
 Confronta l'output della versione sequenziale con l'output della soluzione parallela*/
 int main(int argc, char *argv[]){
 
-    FILE *seq_file = fopen("sequential_output.txt", "rb");
-    FILE *par_file = fopen("parallel_output.txt", "rb");
+    FILE *seq_file = fopen("sequential_output.txt", "r");
+    FILE *par_file = fopen("parallel_output.txt", "r");
 
-    int num_particles = 5;
+    int num_particles = 1000;  //Numero delle particelle di DEFAULT se nessun parametro è fornito sulla command-line
+    if(argc > 1){
+        // E' stato fornito il parametro da linea di comando che indica il numero di particelle
+        num_particles = atoi(argv[1]);
+    }
 
     /* fopen() ritorna NULL se non riesce ad aprire un file nella modalità indicata. */
     if (seq_file == NULL || par_file == NULL){
@@ -43,20 +53,24 @@ int main(int argc, char *argv[]){
 
     /*Verifico se lo stato finale delle particelle dopo la computazione sequenziale 
     è uguale a quello delle particelle dopo la computazione parallela*/
+    int flag = 1; //flag rimarrà uguale a 1 se i due autput sono uguali altrimenti sarà 0
     for (int i = 0; i < num_particles; i++){
-        if (!compare_float(seq_particles[i].x, par_particles[i].x))
+        if (!compare_float(seq_particles[i].x, par_particles[i].x)){
             printf("Difference in member [%d].x \n", i);
-        if (!compare_float(seq_particles[i].y, par_particles[i].y))
+            flag = 0;
+        }
+        if (!compare_float(seq_particles[i].y, par_particles[i].y)){
             printf("Difference in member [%d].y \n", i);
-        if (!compare_float(seq_particles[i].z, par_particles[i].z))
+            flag = 0;
+        }
+        if (!compare_float(seq_particles[i].z, par_particles[i].z)){
             printf("Difference in member [%d].z \n", i);
-        if (!compare_float(seq_particles[i].vx, par_particles[i].vx))
-            printf("Difference in member [%d].vx \n", i);
-        if (!compare_float(seq_particles[i].vy, par_particles[i].vy))
-            printf("Difference in member [%d].vy \n", i);
-        if (!compare_float(seq_particles[i].vz, par_particles[i].vz))
-            printf("Difference in member [%d].vz \n", i);
+            flag = 0;
+        }
     }
+
+    if (flag) printf("CORRETTO-L'output della computazione parallela è uguale all'output della compuzione sequenziale\n");
+    else printf("NON CORRETTO-L'output della computazione parallela è diverso all'output della compuzione sequenziale\n");
 
     /* Infine chiudo i files per rilasciare le risorse */
     fclose(seq_file);
