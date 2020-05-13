@@ -113,8 +113,8 @@ int main(int argc, char* argv[]){
     if(myrank == MASTER) {
 	    particles = (Particle*) malloc(num_particles * sizeof(Particle));
 
-       srand(myrank);
-       randomizeParticles(particles,num_particles);
+        srand(myrank);
+        randomizeParticles(particles,num_particles);
 
         /* TEST: decommenta per scrivere su stdout il valore iniziale delle particelle
         printf("INPUT\n");
@@ -122,6 +122,9 @@ int main(int argc, char* argv[]){
             printf("[%d].x = %f\t", i, particles[i].x);
             printf("[%d].y = %f\t", i, particles[i].y);
             printf("[%d].z = %f\t", i, particles[i].z);
+            printf("[%d].vx = %f\t", i, particles[i].vx);
+            printf("[%d].vy = %f\t", i, particles[i].vy);
+            printf("[%d].vz = %f\t", i, particles[i].vz);
             printf("\n");
         }*/
     }
@@ -130,8 +133,6 @@ int main(int argc, char* argv[]){
     /*** Distribuzione delle porzioni ai vari processi ***/
     my_portion = (Particle*) malloc(sizeof(Particle) * dim_portions[myrank]);
 	MPI_Scatterv(particles, dim_portions, displ, particle_type,my_portion, dim_portions[myrank], particle_type,MASTER, MPI_COMM_WORLD);
-
-    //if(myrank == MASTER) free(particles);
 
     /*** Inizio della simulazione ***/
 	Particle *portion_send;
@@ -188,10 +189,8 @@ int main(int argc, char* argv[]){
         }
 
         iterEnd = MPI_Wtime();
-        if(myrank == MASTER) printf("Iteration %d di %d completata in %f seconds\n", iteration, I, (iterEnd-iterStart));
+        if(myrank == MASTER) printf("Iterazione %d di %d completata in %f seconds\n", iteration, I, (iterEnd-iterStart));
     }
-
-
 
     /*** Gathering della porzione computata da ogni processo ***/
 	Particle *gathered_particles = NULL;
@@ -205,14 +204,14 @@ int main(int argc, char* argv[]){
     free(dim_portions);
     free(displ);
 
-    MPI_Barrier(MPI_COMM_WORLD);     // tutti i processi hanno terminato */
+    MPI_Barrier(MPI_COMM_WORLD);     // tutti i processi hanno terminato 
     end = MPI_Wtime();               // Prendo il tempo di fine esecuzione
     MPI_Finalize();                  
 
     if(myrank == MASTER) {
         double totalTime = end-start;
         double avgTime = totalTime / (double)(I); 
-        printf("Avg iteration time: %f seconds\n", avgTime);
+        printf("\nAvg iteration time: %f seconds\n", avgTime);
         printf("Total time: %f\n", totalTime);
 
         /* TEST: decommenta per scrivere su stdout lo stato finale delle particelle dopo la computazione
@@ -221,8 +220,18 @@ int main(int argc, char* argv[]){
             printf("[%d].x = %f\t", i, gathered_particles[i].x);
             printf("[%d].y = %f\t", i, gathered_particles[i].y);
             printf("[%d].z = %f\t", i, gathered_particles[i].z);
+            printf("[%d].vx = %f\t", i, gathered_particles[i].vx);
+            printf("[%d].vy = %f\t", i, gathered_particles[i].vy);
+            printf("[%d].vz = %f\t", i, gathered_particles[i].vz);
             printf("\n");
         }*/
+
+        /*Scrivo l'output su file per poi poterne valutare la correttenza confrontando con l'output sequenziale*/
+        FILE * file= fopen("parallel_output.txt", "wb");
+        if (file != NULL) {
+            fwrite(gathered_particles , sizeof(Particle) * num_particles, 1, file);
+            fclose(file);
+        }
 	    
         free(particles);
 	    free(gathered_particles);	
