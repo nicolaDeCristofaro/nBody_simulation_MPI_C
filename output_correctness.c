@@ -67,6 +67,18 @@ int main(int argc, char *argv[]){
             printf("Difference in member [%d].z \n", i);
             flag = 0;
         }
+        if (!compare_float(seq_particles[i].vx, par_particles[i].vx)){
+            printf("Difference in member [%d].vx \n", i);
+            flag = 0;
+        }
+        if (!compare_float(seq_particles[i].vy, par_particles[i].vy)){
+            printf("Difference in member [%d].vy \n", i);
+            flag = 0;
+        }
+        if (!compare_float(seq_particles[i].vz, par_particles[i].vz)){
+            printf("Difference in member [%d].vz \n", i);
+            flag = 0;
+        }
     }
 
     if (flag) printf("CORRETTO-L'output della computazione parallela è uguale all'output della compuzione sequenziale\n");
