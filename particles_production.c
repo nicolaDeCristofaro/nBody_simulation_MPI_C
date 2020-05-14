@@ -32,9 +32,10 @@ int main(int argc, char* argv[]){
     Particle *particles = NULL;
     particles = (Particle*) malloc(num_particles * sizeof(Particle));
 
+    srand(0);
     randomizeParticles(particles,num_particles);
 
-    FILE * file= fopen("particles.dat", "w");
+    FILE * file= fopen("particles.txt", "w");
     if (file != NULL) {
         fwrite(particles , sizeof(Particle) * num_particles, 1, file);
         fclose(file);

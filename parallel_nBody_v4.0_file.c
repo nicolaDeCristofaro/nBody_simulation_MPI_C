@@ -39,19 +39,6 @@ void compute_equal_workload_for_each_task(int *dim_portions, int *displs, int ar
     il valore associato a uno specifico indice rappresenta la dimensione della porzione di workload associata a quel task*/
 }
 
-/*Inizializza con valori random lo stato delle particelle*/
-void randomizeParticles(Particle *particles, int n) {
-    for (int i = 0; i < n; i++) {
-        particles[i].mass = 2.0;  // valore arbitrario scelto per la massa delle particelle -> 2.0
-        particles[i].x = 2.0f * (rand() / (float)RAND_MAX) - 1.0f;  //numero random compreso tra -1 and 1
-		particles[i].y = 2.0f * (rand() / (float)RAND_MAX) - 1.0f;
-		particles[i].z = 2.0f * (rand() / (float)RAND_MAX) - 1.0f;
-        particles[i].vx = 2.0f * (rand() / (float)RAND_MAX) - 1.0f;
-	    particles[i].vy = 2.0f * (rand() / (float)RAND_MAX) - 1.0f;
-		particles[i].vz = 2.0f * (rand() / (float)RAND_MAX) - 1.0f;
-  }
-}
-
 /*Funzione che esegue computazione su una specifica porzione di workload */
 void bodyForce(Particle *all_particles, Particle *my_portion, float dt, int dim_portion, int num_particles) {
     for (int i = 0; i < dim_portion; i++) { 
@@ -123,18 +110,15 @@ int main(int argc, char* argv[]){
     Particle *particles = (Particle*) malloc(num_particles * sizeof(Particle));
     if(myrank == MASTER) {
 
-        srand(myrank);
-        randomizeParticles(particles,num_particles);
-
-        /*FILE *fileRead = fopen("particles.dat", "r");
+        FILE *fileRead = fopen("particles.txt", "r");
         if (fileRead == NULL){
-            /* Impossibile aprire il file 
+            /* Impossibile aprire il file */
             printf("\nImpossibile aprire il file.\n");
             exit(EXIT_FAILURE);
         }
 
         fread(particles, sizeof(Particle) * num_particles, 1, fileRead);
-        fclose(fileRead);*/
+        fclose(fileRead);
 
 
         /* TEST: decommenta per scrivere su stdout il valore iniziale delle particelle

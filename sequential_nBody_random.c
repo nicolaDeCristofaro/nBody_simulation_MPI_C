@@ -81,16 +81,6 @@ int main(const int argc, const char **argv){
     printf("\n");
   }*/
 
-  /*FILE *fileRead = fopen("particles.dat", "r");
-  if (fileRead == NULL){
-      /* Impossibile aprire il file 
-      printf("\nImpossibile aprire il file.\n");
-      exit(EXIT_FAILURE);
-  }
-
-  fread(particles, sizeof(Particle) * nBodies, 1, fileRead);
-  fclose(fileRead);*/
-
   clock_t start;
   clock_t end;
   double totalTime = 0.0;
