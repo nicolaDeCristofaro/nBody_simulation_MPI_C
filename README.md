@@ -18,9 +18,16 @@ La soluzione proposta ha una complessità quadratica rispetto alla taglia dell'i
 The program must be able to simulate the process for a particular number of steps I. The MASTER process initializes an array of bodies at random and sends it to P-1 processors. Notice that the MASTER can contribute to the computation or not; it is your choice. Each slave simulates the bodies force, only for its bodies, and sends results of its bodies, needed for the next simulation step—the hard part of the problem concerning how to reduce the communication overhead. For the initialization phase, you can consider creating the bodies in a file, and all processors start by reading this file or use a deterministic algorithm to randomize the bodies initialization.  **DA COMPLETARE**
 
 # Correttezza
-Per la correttezza di un programma in parallelo è necessario che l'esecuzione con P processori o con un solo processore con lo stesso input produca lo stesso output. Per verificare questa condizione è stato fatto in modo che l'output dell'esecuzione parallela con più processori sia stato scritto su file (nome file) così come l'output della versione parallela (nome file). E' stato poi realizzato un programma (nome file programma) che mette a confronto il contenuto di questi file per verificarne la correttezza.
+Per la correttezza di un programma in parallelo è necessario che l'esecuzione con P processori o con un solo processore con lo stesso input produca lo stesso output. Per verificare questa condizione è stato fatto in modo che l'output dell'esecuzione parallela con più processori sia stato scritto su file *(parallel_output.txt)* così come l'output della versione sequenziale *(sequential_output.txt)*. E' stato poi realizzato un programma *(output_correctness.c)* che mette a confronto il contenuto di questi file per verificarne la correttezza.
 
-Dopo aver eseguito la versione parallela e quella sequenziale -> comando per eseduire correttezza
+Dopo aver eseguito il programma sia nella versione parallela che quella sequenziale come indicato precedentemente è possibile eseguire il test di correttezza nel seguente modo:
+
+- ```bash
+    gcc -o correctness output_correctness.c
+    ```
+- ```bash
+    ./correctness [numero di particelle] (esempio -> ./correctness 1000)
+    ```
 
 Da sottolineare che per quanto riguarda i confronti tra gli attributi delle particelle per stabilirne la correttezza è stata utilizzata una funzione per confrontare i valori float. Questo perchè la matematica in virgola mobile non è esatta. Valori semplici come 0,2 non possono essere rappresentati con precisione usando numeri binari in virgola mobile e questa precisione limitata dei numeri in virgola mobile significa che lievi variazioni nell'ordine delle operazioni possono cambiare il risultato. Quindi, dato che questi valori vengono memorizzati con precisioni diverse, i risultati possono differire. Di conseguenza se si eseguono vari calcoli e quindi si confrontano i risultati con un valore atteso, è altamente improbabile che si ottenga esattamente il risultato desiderato. Per questo motivo con la funzione realizzata possiamo esprimere il concetto che due valori abbastanza vicini tra loro possono essere considerati uguali.
 
