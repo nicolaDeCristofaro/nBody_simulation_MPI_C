@@ -106,15 +106,42 @@ Viene quindi eseguita la funzione per distribuire equamente il lavoro tra i proc
 ## Finalizzazione e deallocazione
 In quest'ultima fase la computazione è conclusa per tutte le I iterazioni quindi viene deallocata tutta la memoria precedentemente allocata, viene finalizzato MPI con MPI_Finalize() e il processore MASTER provvede a scrivere su stdout il tempo medio di esecuzione di un'iterazione e il tempo totale di esecuzione, scrivendo inoltre lo stato finale delle particelle su un file per un eventuale test di correttezza fatto in seguito.
 
+## Compilazione ed esecuzione
+
+#### Compilazione 
+```bash
+    mpicc -o parallel_nBody parallel_nBody_v4.0.c -lm
+```
+
+#### Esecuzione 
+```bash
+    mpirun -np [numero di processori] parallel_nBody [numero di particelle]
+    esempio -> mpirun -np 4 parallel_nBody 1000
+```
 
 # Correttezza
-Per la correttezza di un programma in parallelo è necessario che l'esecuzione con P processori o con un solo processore con lo stesso input produca lo stesso output. Per verificare questa condizione è stato fatto in modo che l'output dell'esecuzione parallela con più processori sia stato scritto su file *(parallel_output.txt)* così come l'output della versione sequenziale *(sequential_output.txt)*. E' stato poi realizzato un programma *(output_correctness.c)* che mette a confronto il contenuto di questi file per verificarne la correttezza.
+
+- Per la correttezza di un programma in parallelo è necessario che l'esecuzione con P processori o con un solo processore, con lo stesso input produca lo stesso output. Per verificare questa condizione è stato fatto in modo che l'output dell'esecuzione parallela con più processori sia stato scritto su file *(parallel_output.txt)*.
+
+Eseguiamo ora la versione sequenziale del programma:
+
+1. ```bash
+    gcc -o sequential_nBody sequential_nBody.c -lm
+    ```
+
+2. ```bash
+    ./sequential_nBody [numero di particelle] 
+    esempio -> ./sequential_nBody 1000
+    ```
+
+- L'output della versione sequenziale verrà scritto sul file *(sequential_output.txt)*. E' stato poi realizzato un programma *(output_correctness.c)* che mette a confronto il contenuto di questi file per verificarne la correttezza.
 
 Dopo aver eseguito il programma sia nella versione parallela che quella sequenziale come indicato precedentemente è possibile eseguire il test di correttezza nel seguente modo:
 
 1. ```bash
     gcc -o correctness output_correctness.c
     ```
+    
 2. ```bash
     ./correctness [numero di particelle] (esempio -> ./correctness 1000)
     ```
