@@ -39,3 +39,5 @@ int compare_float(float f1, float f2){
 }
 ```
 
+# Problem evaluation and Benchmarks
+Per la valutazione delle prestazioni della soluzione proposta sono state create delle versioni dei programmi (sequenziale: nome file sequenziale - parallela= nome file parallela) leggermente revisionate poichè per un migliore benchmarking sono state eliminate sia scritture su stdout durante la computazione sia la scrittura dell'output finale su file.

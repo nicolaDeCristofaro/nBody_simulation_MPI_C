@@ -14,72 +14,10 @@ typedef struct {
 } Particle;
 
 
+//Definizione delle funzioni
+void compute_equal_workload_for_each_task(int *dim_portions, int *displs, int arraysize, int numtasks);
+void bodyForce(Particle *all_particles, Particle *my_portion, float dt, int dim_portion, int num_particles);
 
-
-///*********************FUNZIONANTE*****/
-
-
-
-/*Distribuzione equa del lavoro tra i tasks*/
-void compute_equal_workload_for_each_task(int *dim_portions, int *displs, int arraysize, int numtasks){
-
-    for(int i=0; i<numtasks;i++){
-        dim_portions[i] = (arraysize / numtasks) +
-                        ((i < (arraysize % numtasks)) ? 1 : 0);
-    }
-
-    //imposto l'array dei displacements : ogni indice rappresenta lo start_offset di un task
-    int offset = 0;
-    for(int i=0;i<numtasks;i++){
-        displs[i] = offset;
-        offset += dim_portions[i];
-    }
-
-    /*dopo questa funzione nell'array dim_portions ogni indice è associato a un task 
-    il valore associato a uno specifico indice rappresenta la dimensione della porzione di workload associata a quel task*/
-}
-
-/*Inizializza con valori random lo stato delle particelle*/
-void randomizeParticles(Particle *particles, int n) {
-    for (int i = 0; i < n; i++) {
-        particles[i].mass = 2.0;  // valore arbitrario scelto per la massa delle particelle -> 2.0
-        particles[i].x = 2.0f * (rand() / (float)RAND_MAX) - 1.0f;  //numero random compreso tra -1 and 1
-		particles[i].y = 2.0f * (rand() / (float)RAND_MAX) - 1.0f;
-		particles[i].z = 2.0f * (rand() / (float)RAND_MAX) - 1.0f;
-        particles[i].vx = 2.0f * (rand() / (float)RAND_MAX) - 1.0f;
-	    particles[i].vy = 2.0f * (rand() / (float)RAND_MAX) - 1.0f;
-		particles[i].vz = 2.0f * (rand() / (float)RAND_MAX) - 1.0f;
-  }
-}
-
-/*Funzione che esegue computazione su una specifica porzione di workload */
-void bodyForce(Particle *all_particles, Particle *my_portion, float dt, int dim_portion, int num_particles) {
-    for (int i = 0; i < dim_portion; i++) { 
-        float Fx = 0.0f; float Fy = 0.0f; float Fz = 0.0f;
-
-        for (int j = 0; j < num_particles; j++) {
-            float dx = all_particles[j].x - my_portion[i].x;
-            float dy = all_particles[j].y - my_portion[i].y;
-            float dz = all_particles[j].z - my_portion[i].z;
-            float distSqr = dx*dx + dy*dy + dz*dz + SOFTENING;
-            float invDist = 1.0f / sqrtf(distSqr);
-            float invDist3 = invDist * invDist * invDist;
-
-            Fx += dx * invDist3; Fy += dy * invDist3; Fz += dz * invDist3;
-        }
-
-        my_portion[i].vx += dt * Fx; 
-        my_portion[i].vy += dt * Fy; 
-        my_portion[i].vz += dt * Fz;
-    }
-
-    //Integro le posizioni della mia porzione
-    for(int i = 0; i < dim_portion; i++) { //può essere anche inserito nel for precedente TODO
-        my_portion[i].x += my_portion[i].vx * dt;
-        my_portion[i].y += my_portion[i].vy * dt;
-        my_portion[i].z += my_portion[i].vz * dt;
-    }
-}
 
 int main(int argc, char* argv[]){
 
@@ -91,8 +29,6 @@ int main(int argc, char* argv[]){
     int *dim_portions;                      // Dimensione della porzione di workload per ogni processo
     int *displ;                             // Offset di partenza della porzione  di workload per ogni processo
     Particle *my_portion;                   // Porzione di particelle di un processo
-    //int left_rank,right_rank;               // Rank dei vicini
-
 
     int num_particles = 1000;  //Numero delle particelle di DEFAULT se nessun parametro è fornito sulla command-line
     if(argc > 1){
@@ -106,7 +42,6 @@ int main(int argc, char* argv[]){
     /*** Creazione del tipo di dato MPI per comunicare il tipo di dato "Particle" ***/
     MPI_Type_contiguous(7, MPI_FLOAT, &particle_type);
     MPI_Type_commit(&particle_type);
-    
     
     /*** Ottengo il numero di processori usati e il rank del processo corrente ***/
     MPI_Comm_size(MPI_COMM_WORLD, &numtasks);
@@ -123,9 +58,16 @@ int main(int argc, char* argv[]){
     Particle *particles = (Particle*) malloc(num_particles * sizeof(Particle));
     if(myrank == MASTER) {
 
-        srand(myrank);
-        randomizeParticles(particles,num_particles);
-        
+        FILE *fileRead = fopen("particles.txt", "r");
+        if (fileRead == NULL){
+            /* Impossibile aprire il file */
+            printf("\nImpossibile aprire il file.\n");
+            exit(EXIT_FAILURE);
+        }
+
+        fread(particles, sizeof(Particle) * num_particles, 1, fileRead);
+        fclose(fileRead);
+
         /* TEST: decommenta per scrivere su stdout il valore iniziale delle particelle
         printf("INPUT\n");
         for (int i = 0  ; i < num_particles; i++) { 
@@ -204,5 +146,53 @@ int main(int argc, char* argv[]){
     
     return 0;
 
+}
+
+/*Distribuzione equa del lavoro tra i tasks*/
+void compute_equal_workload_for_each_task(int *dim_portions, int *displs, int arraysize, int numtasks){
+
+    for(int i=0; i<numtasks;i++){
+        dim_portions[i] = (arraysize / numtasks) +
+                        ((i < (arraysize % numtasks)) ? 1 : 0);
+    }
+
+    //imposto l'array dei displacements : ogni indice rappresenta lo start_offset di un task
+    int offset = 0;
+    for(int i=0;i<numtasks;i++){
+        displs[i] = offset;
+        offset += dim_portions[i];
+    }
+
+    /*dopo questa funzione nell'array dim_portions ogni indice è associato a un task 
+    il valore associato a uno specifico indice rappresenta la dimensione della porzione di workload associata a quel task*/
+}
+
+/*Funzione che esegue computazione su una specifica porzione di workload */
+void bodyForce(Particle *all_particles, Particle *my_portion, float dt, int dim_portion, int num_particles) {
+    for (int i = 0; i < dim_portion; i++) { 
+        float Fx = 0.0f; float Fy = 0.0f; float Fz = 0.0f;
+
+        for (int j = 0; j < num_particles; j++) {
+            float dx = all_particles[j].x - my_portion[i].x;
+            float dy = all_particles[j].y - my_portion[i].y;
+            float dz = all_particles[j].z - my_portion[i].z;
+            float distSqr = dx*dx + dy*dy + dz*dz + SOFTENING;
+            float invDist = 1.0f / sqrtf(distSqr);
+            float invDist3 = invDist * invDist * invDist;
+
+            Fx += dx * invDist3; Fy += dy * invDist3; Fz += dz * invDist3;
+        }
+
+        my_portion[i].vx += dt * Fx; 
+        my_portion[i].vy += dt * Fy; 
+        my_portion[i].vz += dt * Fz;
+    }
+
+    //Integro le posizioni della mia porzione
+    for(int i = 0; i < dim_portion; i++) { //può essere anche inserito nel for precedente TODO
+        my_portion[i].x += my_portion[i].vx * dt;
+        my_portion[i].y += my_portion[i].vy * dt;
+        my_portion[i].z += my_portion[i].vz * dt;
+    }
 }
 
