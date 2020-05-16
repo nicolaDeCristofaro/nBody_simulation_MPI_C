@@ -16,7 +16,7 @@ La soluzione proposta ha una complessità quadratica rispetto alla taglia dell'i
 
 # Struttura della soluzione
 
-## Inizializzazione
+### Inizializzazione
 Per la fase di inizializzazione è stata adottata la tecnica di creare le particelle in un file e inizializzarle usando un algoritmo deterministico per randomizzare i valori delle particelle. In questo modo tutti i processori alla prima iterazione della computazione partono leggendo da questo file *(particles.txt)*.
 
 Per la creazione e inizializzazione delle particelle eseguire i seguenti comandi:
@@ -28,7 +28,7 @@ Per la creazione e inizializzazione delle particelle eseguire i seguenti comandi
     ./initialization [numero di particelle] (esempio -> ./initialization 1000)
     ```
 
-## Inizializzazione di MPI, variabili e allocazione memoria
+### Inizializzazione di MPI, variabili e allocazione memoria
 La prima parte del programma parte con la definizione di variabili utili alla computazione, variabili per prendere i tempi di esecuzione e infine variabili per l'uso di MPI. Oltre alle operazioni sempre presenti come MPI_Init, MPI_Comm_size per conoscere il numero di processori che stanno eseguendo o MPI_Comm_rank per conoscere il rank del processore corrente, è stata fatta un'altra operazione per creare un tipo di dato derivato al fine di permettere la comunicazione tra i processori del tipo di dato Particle.
 
 ```c
@@ -36,7 +36,7 @@ La prima parte del programma parte con la definizione di variabili utili alla co
     MPI_Type_commit(&particle_type);
 ```
 
-## Distribuziona equa del workload tra i processori
+### Distribuziona equa del workload tra i processori
 Viene quindi eseguita la funzione per distribuire equamente il lavoro tra i processori. Dopo l'esecuzione di questa funzione nell'array dim_portions ogni indice è associato al rank di un processore e il suo contenuto rappresenta la dimensione della porzione di array su cui quel processore dovrà computare. Inoltre viene impostato l'array dei displacements in cui ogni indice rappresenta lo start_offset di un processore.
 
 ```c
@@ -55,7 +55,7 @@ Viene quindi eseguita la funzione per distribuire equamente il lavoro tra i proc
     }
 ```
 
-## Computazione e comunicazione tra i processori
+### Computazione e comunicazione tra i processori
 
 - La simulazione avviene per un certo numero di iterazioni I impostato a 10. Inoltre consideriamo il processore con rank 0 il processore MASTER mentre gli altri vengono considerati SLAVES.
 
@@ -103,10 +103,10 @@ Viene quindi eseguita la funzione per distribuire equamente il lavoro tra i proc
     if(myrank == MASTER) printf("Iterazione %d di %d completata in %f seconds\n", iteration, I, (iterEnd-iterStart));
 ```
 
-## Finalizzazione e deallocazione
+### Finalizzazione e deallocazione
 In quest'ultima fase la computazione è conclusa per tutte le I iterazioni quindi viene deallocata tutta la memoria precedentemente allocata, viene finalizzato MPI con MPI_Finalize() e il processore MASTER provvede a scrivere su stdout il tempo medio di esecuzione di un'iterazione e il tempo totale di esecuzione, scrivendo inoltre lo stato finale delle particelle su un file per un eventuale test di correttezza fatto in seguito.
 
-## Compilazione ed esecuzione
+### Compilazione ed esecuzione
 
 #### Compilazione 
 ```bash
