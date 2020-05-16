@@ -123,7 +123,7 @@ In quest'ultima fase la computazione è conclusa per tutte le I iterazioni quind
 
 - Per la correttezza di un programma in parallelo è necessario che l'esecuzione con P processori o con un solo processore, con lo stesso input produca lo stesso output. Per verificare questa condizione è stato fatto in modo che l'output dell'esecuzione parallela con più processori sia stato scritto su file *(parallel_output.txt)*.
 
-Eseguiamo ora la versione sequenziale del programma:
+- Eseguiamo ora la versione sequenziale del programma:
 
 1. ```bash
     gcc -o sequential_nBody sequential_nBody.c -lm
@@ -141,7 +141,7 @@ Dopo aver eseguito il programma sia nella versione parallela che quella sequenzi
 1. ```bash
     gcc -o correctness output_correctness.c
     ```
-    
+
 2. ```bash
     ./correctness [numero di particelle] (esempio -> ./correctness 1000)
     ```
