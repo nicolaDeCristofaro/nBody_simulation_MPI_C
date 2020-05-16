@@ -55,22 +55,10 @@ int main(int argc, char* argv[]){
     displ = (int*) malloc(sizeof(int)*numtasks);
     compute_equal_workload_for_each_task(dim_portions, displ, num_particles, numtasks);
 
-    /*** Il processo MASTER inizializza le particelle ***/
-    Particle *particles = (Particle*) malloc(num_particles * sizeof(Particle));
-    if(myrank == MASTER) {
-
-        FILE *fileRead = fopen("particles.txt", "r");
-        if (fileRead == NULL){
-            /* Impossibile aprire il file */
-            printf("\nImpossibile aprire il file.\n");
-            exit(EXIT_FAILURE);
-        }
-
-        fread(particles, sizeof(Particle) * num_particles, 1, fileRead);
-        fclose(fileRead);
-    }
 
     const float dt = 0.01f; // time step
+
+    Particle *particles = (Particle*) malloc(num_particles * sizeof(Particle));
     my_portion = (Particle*) malloc(sizeof(Particle) * dim_portions[myrank]);
     Particle *gathered_particles = NULL;
 	if(myrank == MASTER) gathered_particles = (Particle*) malloc(sizeof(Particle) * num_particles);
@@ -80,8 +68,21 @@ int main(int argc, char* argv[]){
         MPI_Barrier(MPI_COMM_WORLD);  //Sincronizzo i processi prima di cominciare a prendere il tempo di esecuzione dell'iterazione
         iterStart = MPI_Wtime();	
 
-        //Distribuzione in broadcast di tutte le particelle a tutti i processi
-        MPI_Bcast(particles, num_particles, particle_type, MASTER, MPI_COMM_WORLD);
+        if(iteration == 0){
+            //E' la prima iterazione quindi tutti i processori possono leggere lo stato iniziale delle particelle da file
+            FILE *fileRead = fopen("particles.txt", "r");
+            if (fileRead == NULL){
+                /* Impossibile aprire il file */
+                printf("\nImpossibile aprire il file.\n");
+                exit(EXIT_FAILURE);
+            }
+
+            fread(particles, sizeof(Particle) * num_particles, 1, fileRead);
+            fclose(fileRead);
+        }else{
+            //il processore MASTER ha l'array di particelle output della precedente iterazione quindi spedisce in broadcast
+            MPI_Bcast(particles, num_particles, particle_type, MASTER, MPI_COMM_WORLD);
+        }
 
         /*** Distribuzione delle porzioni ai vari processi ***/
         MPI_Scatterv(particles, dim_portions, displ, particle_type,my_portion, dim_portions[myrank], particle_type,MASTER, MPI_COMM_WORLD);
