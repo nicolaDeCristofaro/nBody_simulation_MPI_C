@@ -4,8 +4,8 @@
 # Descrizione del problema
 In fisica, il problema n-body consiste nel predire i  singoli movimenti di un gruppo di oggetti celesti che interagiscono tra loro in modo gravitazionale. La risoluzione di questo problema è stata motivata dal desiderio di comprendere i movimenti del Sole, della Luna, dei pianeti e delle stelle visibili.
 
-<div style="margin:auto;">
-    <img alt="nBodySimulation" src="Project/nBody_simulation_MPI_C/images/NaturalDiligentIguanodon-size_restricted.gif" />
+<div style="display:block; text-align:center;">
+    <img alt="nBodySimulation" src="./images/NaturalDiligentIguanodon-size_restricted.gif" />
 </div>
 
 # Descrizione della soluzione
