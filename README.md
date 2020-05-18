@@ -164,5 +164,22 @@ int compare_float(float f1, float f2){
 ```
 
 # Problem evaluation and Benchmarks
+
 Per la valutazione delle prestazioni della soluzione proposta sono state create delle versioni dei programmi (sequenziale: sequential_nBody_benchmarking.c - parallela: parallel_nBody_benchmarking.c) leggermente revisionate poichè per effettuare un migliore benchmarking sono state eliminate sia scritture su stdout durante la computazione sia la scrittura dell'output finale su file.
+
+Possiamo ora procedere con la descrizione dei risultati dati dalla  misurazione della scalabilità dell'applicazione. Ci sono due modi di base per misurare la performance parallela di un'applicazione: strong e weak scaling.
+
+### Strong Scaling
+
+In questo tipo di misurazione la taglia del problema (il numero di particelle) resta fissata ma il numero di processori aumenta. 
+
+
+
+### Weak Scaling
+
+In questo caso la taglia del problema aumenta con l'aumentare del numero di processori, facendo in modo che il workload sia sempre equamente distribuito tra i processori.
+
+
+
+
 
