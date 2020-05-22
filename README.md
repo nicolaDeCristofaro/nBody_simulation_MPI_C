@@ -1,3 +1,5 @@
+<link href="style.css" rel="stylesheet"></link>
+
 | N-Body Simulation | Nicola De Cristofaro | Data di consegna |
 | --- | --- | --- |
 
