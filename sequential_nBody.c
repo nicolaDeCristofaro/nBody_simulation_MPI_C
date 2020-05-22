@@ -30,6 +30,11 @@ int main(const int argc, const char **argv)
   const float dt = 0.01f; // time step
   const int nIters = 10;  // simulation iterations
 
+  clock_t startIter, endIter;
+  clock_t startTotal = clock(), endTotal;
+  double totalTime = 0.0;
+
+
   Particle *particles = NULL;
   particles = (Particle *)malloc(nBodies * sizeof(Particle));
 
@@ -56,13 +61,10 @@ int main(const int argc, const char **argv)
   fread(particles, sizeof(Particle) * nBodies, 1, fileRead);
   fclose(fileRead);
 
-  clock_t start;
-  clock_t end;
-  double totalTime = 0.0;
 
   for (int iter = 1; iter <= nIters; iter++)
   {
-    start = clock();
+    startIter = clock();
 
     bodyForce(particles, dt, nBodies); // compute interbody forces
 
@@ -73,15 +75,15 @@ int main(const int argc, const char **argv)
       particles[i].z += particles[i].vz * dt;
     }
 
-    end = clock() - start;
-
-    printf("Iteration %d: %f seconds\n", iter, (double)end / CLOCKS_PER_SEC);
-    totalTime += (double)end / CLOCKS_PER_SEC;
+    endIter = clock() - startIter;
+    printf("Iterazione %d di %d completata in %f seconds\n", iter, nIters, (double)endIter / CLOCKS_PER_SEC);
   }
 
+  endTotal = clock();
+  totalTime = (double)(endTotal - startTotal) / CLOCKS_PER_SEC;
   double avgTime = totalTime / (double)(nIters - 1);
-  printf("Total time: %f seconds\n", totalTime);
-  printf("Avg time: %f seconds\n", avgTime);
+  printf("\nAvg iteration time: %f seconds\n", avgTime);
+  printf("Total time: %f\n", totalTime);
 
   /*OUTPUT TEST
   printf("OUTPUT\n");
