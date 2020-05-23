@@ -96,7 +96,7 @@ int main(int argc, char* argv[]){
 
         MPI_Barrier(MPI_COMM_WORLD);  
         iterEnd = MPI_Wtime();
-        //if(myrank == MASTER) printf("Iterazione %d di %d completata in %f seconds\n", iteration, I, (iterEnd-iterStart));
+        if(myrank == MASTER) printf("Iterazione %d di %d completata in %f seconds\n", iteration, I, (iterEnd-iterStart));
     }
 
     MPI_Barrier(MPI_COMM_WORLD);     // tutti i processi hanno terminato 

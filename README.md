@@ -125,7 +125,7 @@ In quest'ultima fase la computazione è conclusa per tutte le I iterazioni quind
 
 - Per la correttezza di un programma in parallelo è necessario che l'esecuzione con P processori o con un solo processore, con lo stesso input produca lo stesso output. Per verificare questa condizione è stato fatto in modo che l'output dell'esecuzione parallela con più processori sia stato scritto su file *(parallel_output.txt)*.
 
-- Eseguiamo ora la versione sequenziale del programma:
+- Eseguiamo ora la versione sequenziale del programma che può essere eseguita sia utilizzando la versione parallela su 1 processore, sia utilizzando la versione sequenziale che evita anche l'inizializzazione e finalizzazione di MPI.
 
 1. ```bash
     gcc -o sequential_nBody sequential_nBody.c -lm
@@ -134,6 +134,16 @@ In quest'ultima fase la computazione è conclusa per tutte le I iterazioni quind
 2. ```bash
     ./sequential_nBody [numero di particelle] 
     esempio -> ./sequential_nBody 1000
+    ```
+    **OPPURE**
+
+ 1. ```bash
+    mpicc -o parallel_nBody parallel_nBody_v4.0.c -lm
+    ```
+
+2. ```bash
+    mpirun -np 1 parallel_nBody [numero di particelle]
+    esempio -> mpirun -np 1 parallel_nBody 1000
     ```
 
 - L'output della versione sequenziale verrà scritto sul file *(sequential_output.txt)*. E' stato poi realizzato un programma *(output_correctness.c)* che mette a confronto il contenuto di questi file per verificarne la correttezza.
@@ -167,9 +177,9 @@ int compare_float(float f1, float f2){
 
 # Problem evaluation and Benchmarks
 
-Per la valutazione delle prestazioni della soluzione proposta sono state create delle versioni dei programmi (sequenziale: sequential_nBody_benchmarking.c - parallela: parallel_nBody_benchmarking.c) leggermente revisionate poichè per effettuare un migliore benchmarking sono state eliminate sia scritture su stdout durante la computazione sia la scrittura dell'output finale su file.
+Per la valutazione delle prestazioni della soluzione proposta sono state create delle versioni dei programmi **(sequenziale: sequential_nBody_benchmarking.c - parallela: parallel_nBody_benchmarking.c)** leggermente revisionate poichè per effettuare un migliore benchmarking è stata eliminata la scrittura dell'output finale su file per focalizzarci sul tempo computazione.
 
-Possiamo ora procedere con la descrizione dei risultati dati dalla  misurazione della scalabilità dell'applicazione. Ci sono due modi di base per misurare la performance parallela di un'applicazione: strong e weak scaling.
+Possiamo ora procedere con la descrizione dei risultati dati dalla misurazione della scalabilità dell'applicazione. Ci sono due modi di base per misurare la performance parallela di un'applicazione: **strong e weak scaling**.
 
 ### Strong Scaling
 

@@ -20,8 +20,8 @@ typedef struct
 //Function definition
 void bodyForce(Particle *p, float dt, int n);
 
-
-int main(const int argc, const char **argv){
+int main(const int argc, const char **argv)
+{
 
   int nBodies = 10; //number of bodies if no paramters is given from command-line
   if (argc > 1)
@@ -30,57 +30,88 @@ int main(const int argc, const char **argv){
   const float dt = 0.01f; // time step
   const int nIters = 10;  // simulation iterations
 
+  clock_t startIter, endIter;
+  clock_t startTotal = clock(), endTotal;
+  double totalTime = 0.0;
+
+
   Particle *particles = NULL;
-  particles = (Particle*) malloc(nBodies * sizeof(Particle));
+  particles = (Particle *)malloc(nBodies * sizeof(Particle));
+
+  /*INPUT TEST
+  printf("INPUT\n");
+  for(int i=0; i< nBodies; i++){
+    printf("[%d].x = %f  ", i, particles[i].x);
+    printf("[%d].y = %f  ", i, particles[i].y);
+    printf("[%d].z = %f  ", i, particles[i].z);
+    printf("[%d].vx = %f  ", i, particles[i].vx);
+    printf("[%d].vy = %f  ", i, particles[i].vy);
+    printf("[%d].vz = %f  ", i, particles[i].vz);
+    printf("\n");
+  }*/
 
   FILE *fileRead = fopen("particles.txt", "r");
-  if (fileRead == NULL){
-      /* Impossibile aprire il file */
-      printf("\nImpossibile aprire il file.\n");
-      exit(EXIT_FAILURE);
+  if (fileRead == NULL)
+  {
+    /* Impossibile aprire il file */
+    printf("\nImpossibile aprire il file.\n");
+    exit(EXIT_FAILURE);
   }
 
   fread(particles, sizeof(Particle) * nBodies, 1, fileRead);
   fclose(fileRead);
 
-  clock_t start;
-  clock_t end;
-  double totalTime = 0.0;
 
-  for (int iter = 1; iter <= nIters; iter++){
-    start = clock();
+  for (int iter = 1; iter <= nIters; iter++)
+  {
+    startIter = clock();
 
     bodyForce(particles, dt, nBodies); // compute interbody forces
 
-    for (int i = 0; i < nBodies; i++){ // integrate position
+    for (int i = 0; i < nBodies; i++)
+    { // integrate position
       particles[i].x += particles[i].vx * dt;
       particles[i].y += particles[i].vy * dt;
       particles[i].z += particles[i].vz * dt;
     }
 
-    end = clock() - start;
-
-    //printf("Iteration %d: %f seconds\n", iter, (double)end / CLOCKS_PER_SEC);
-    totalTime += (double)end / CLOCKS_PER_SEC;
+    endIter = clock() - startIter;
+    printf("Iterazione %d di %d completata in %f seconds\n", iter, nIters, (double)endIter / CLOCKS_PER_SEC);
   }
 
+  endTotal = clock();
+  totalTime = (double)(endTotal - startTotal) / CLOCKS_PER_SEC;
   double avgTime = totalTime / (double)(nIters - 1);
-  printf("\nComputation completed\n");
-  printf("Avg iteration time: %f seconds\n", avgTime);
+  printf("\nAvg iteration time: %f seconds\n", avgTime);
   printf("Total time: %f\n", totalTime);
+
+  /*OUTPUT TEST
+  printf("OUTPUT\n");
+  for (int i = 0; i < nBodies; i++)
+  {
+    printf("[%d].x = %f  ", i, particles[i].x);
+    printf("[%d].y = %f  ", i, particles[i].y);
+    printf("[%d].z = %f  ", i, particles[i].z);
+    printf("[%d].vx = %f  ", i, particles[i].vx);
+    printf("[%d].vy = %f  ", i, particles[i].vy);
+    printf("[%d].vz = %f  ", i, particles[i].vz);
+    printf("\n");
+  }*/
 
   free(particles);
 }
 
-
 /*Function that make computation*/
-void bodyForce(Particle *p, float dt, int n){
-  for (int i = 0; i < n; i++){
+void bodyForce(Particle *p, float dt, int n)
+{
+  for (int i = 0; i < n; i++)
+  {
     float Fx = 0.0f;
     float Fy = 0.0f;
     float Fz = 0.0f;
 
-    for (int j = 0; j < n; j++){
+    for (int j = 0; j < n; j++)
+    {
       float dx = p[j].x - p[i].x;
       float dy = p[j].y - p[i].y;
       float dz = p[j].z - p[i].z;
