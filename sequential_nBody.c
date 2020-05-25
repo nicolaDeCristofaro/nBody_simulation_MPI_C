@@ -83,7 +83,7 @@ int main(const int argc, const char **argv)
   totalTime = (double)(endTotal - startTotal) / CLOCKS_PER_SEC;
   double avgTime = totalTime / (double)(nIters - 1);
   printf("\nAvg iteration time: %f seconds\n", avgTime);
-  printf("Total time: %f\n", totalTime);
+  printf("Total time: %f seconds\n", totalTime);
 
   /*OUTPUT TEST
   printf("OUTPUT\n");

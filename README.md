@@ -185,11 +185,51 @@ Possiamo ora procedere con la descrizione dei risultati dati dalla misurazione d
 
 In questo tipo di misurazione la taglia del problema (il numero di particelle) resta fissata ma il numero di processori aumenta. 
 
+|   P	|   N	|   Computation Time	|
+|:-:	|:-:	|:-:	|
+|   1	|  100 000	|   	|
+|   2	|  100 000 	|   	|
+|   3	|  100 000	|   	|
+|   4	|  100 000 	|   	|
+|   5	|  100 000 	|   	|
+|   6	|  100 000 	|   	|
+|   7	|  100 000 	|   	|
+|   8	|  100 000 	|   	|
+|   9	|  100 000 	|   	|
+|   10	|  100 000 	|   	|
+|   11	|  100 000 	|   	|
+|   12	|  100 000 	|   	|
+|   13	|  100 000 	|   	|
+|   14	|  100 000 	|   	|
+|   15	|  100 000 	|   	|
+|   16	|  100 000 	|   	|
+
 
 
 ### Weak Scaling
 
 In questo caso la taglia del problema aumenta con l'aumentare del numero di processori, facendo in modo che il workload sia sempre equamente distribuito tra i processori.
+
+|   P	|   N	|   Computation Time	|
+|:-:	|:-:	|:-:	|
+|   1	|  10 000	|   	|
+|   2	|  20 000 	|   	|
+|   3	|  30 000	|   	|
+|   4	|  40 000 	|   	|
+|   5	|  50 000 	|   	|
+|   6	|  60 000 	|   	|
+|   7	|  70 000 	|   	|
+|   8	|  80 000 	|   	|
+|   9	|  90 000 	|   	|
+|   10	|  100 000 	|   	|
+|   11	|  110 000 	|   	|
+|   12	|  120 000 	|   	|
+|   13	|  130 000 	|   	|
+|   14	|  140 000 	|   	|
+|   15	|  150 000 	|   	|
+|   16	|  160 000 	|   	|
+
+### Speedup
 
 
 

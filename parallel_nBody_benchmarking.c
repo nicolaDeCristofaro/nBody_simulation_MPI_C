@@ -96,7 +96,7 @@ int main(int argc, char* argv[]){
 
         MPI_Barrier(MPI_COMM_WORLD);  
         iterEnd = MPI_Wtime();
-        if(myrank == MASTER) printf("Iterazione %d di %d completata in %f seconds\n", iteration, I, (iterEnd-iterStart));
+        if(myrank == MASTER) printf("Iterazione %d di %d completata in %f seconds\n", iteration+1, I, (iterEnd-iterStart));
     }
 
     MPI_Barrier(MPI_COMM_WORLD);     // tutti i processi hanno terminato 
@@ -108,7 +108,7 @@ int main(int argc, char* argv[]){
         double avgTime = totalTime / (double)(I);
         printf("\nComputation completed\n");
         printf("Avg iteration time: %f seconds\n", avgTime);
-        printf("Total time: %f\n", totalTime);
+        printf("Total time: %f seconds\n", totalTime);
 	}
 
     free(my_portion);
