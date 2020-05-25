@@ -38,6 +38,16 @@ La prima parte del programma parte con la definizione di variabili utili alla co
     MPI_Type_commit(&particle_type);
 ```
 
+dove la struttura Particle è la seguente:
+
+```c
+    typedef struct {
+        float mass;
+        float x, y, z;
+        float vx, vy, vz;
+    } Particle;
+```
+
 ### Distribuziona equa del workload tra i processori
 Viene quindi eseguita la funzione per distribuire equamente il lavoro tra i processori. Dopo l'esecuzione di questa funzione nell'array dim_portions ogni indice è associato al rank di un processore e il suo contenuto rappresenta la dimensione della porzione di array su cui quel processore dovrà computare. Inoltre viene impostato l'array dei displacements in cui ogni indice rappresenta lo start_offset di un processore.
 
@@ -66,7 +76,21 @@ Viene quindi eseguita la funzione per distribuire equamente il lavoro tra i proc
 1. Solo nella prima iterazione tutti i processori leggono lo stato iniziale delle particelle dal file. Se invece non è la prima iterazione significa che il processore MASTER ha l'array di particelle aggiornato dopo la computazione dell'iterazione precedente quindi lo spedisce in broadcast a tutti gli altri processori per la nuova computazione.
 
 ```c
-    MPI_Bcast(particles, num_particles, particle_type, MASTER, MPI_COMM_WORLD);
+        if(iteration == 0){
+            //E' la prima iterazione quindi tutti i processori possono leggere lo stato iniziale delle particelle da file
+            FILE *fileRead = fopen("particles.txt", "r");
+            if (fileRead == NULL){
+                /* Impossibile aprire il file */
+                printf("\nImpossibile aprire il file.\n");
+                exit(EXIT_FAILURE);
+            }
+
+            fread(particles, sizeof(Particle) * num_particles, 1, fileRead);
+            fclose(fileRead);
+        }else{
+            //il processore MASTER ha l'array di particelle output della computazine precedente quindi spedisce in broadcast
+            MPI_Bcast(particles, num_particles, particle_type, MASTER, MPI_COMM_WORLD);
+        }
 ```
 
 2. Il processore MASTER spedisce inoltre a tutti i processorri la porzione di array la cui dimensione è stata calcolata in modo equo al passo precedente. **Da sottolineare che il processore MASTER non si occupa solo di gestire la comunicazione tra processori ma effettua anch'esso la computazione sulla sua porzione.**
@@ -81,7 +105,7 @@ Viene quindi eseguita la funzione per distribuire equamente il lavoro tra i proc
     bodyForce(particles, my_portion, dt, dim_portions[myrank], num_particles );
 ```
 
-4. Ogni processore spedisce al MASTER la proprio porzione computata quindi dopo questa operazione di gathering il processore MASTER ha l'array di particelle completo e computato per una certa iterazione.
+4. Ogni processore spedisce al MASTER la propria porzione computata quindi dopo questa operazione di gathering il processore MASTER ha l'array di particelle completo e computato per una certa iterazione.
 
 ```c
     MPI_Gatherv(my_portion, dim_portions[myrank], particle_type, gathered_particles, dim_portions, displ, particle_type,MASTER, MPI_COMM_WORLD);
@@ -112,13 +136,13 @@ In quest'ultima fase la computazione è conclusa per tutte le I iterazioni quind
 
 #### Compilazione 
 ```bash
-    mpicc -o parallel_nBody parallel_nBody_v4.0.c -lm
+    mpicc -o parallel parallel_nBody.c -lm
 ```
 
 #### Esecuzione 
 ```bash
-    mpirun -np [numero di processori] parallel_nBody [numero di particelle]
-    esempio -> mpirun -np 4 parallel_nBody 1000
+    mpirun -np [numero di processori] parallel [numero di particelle]
+    esempio -> mpirun -np 4 parallel 1000
 ```
 
 # Correttezza
@@ -128,25 +152,25 @@ In quest'ultima fase la computazione è conclusa per tutte le I iterazioni quind
 - Eseguiamo ora la versione sequenziale del programma che può essere eseguita sia utilizzando la versione parallela su 1 processore, sia utilizzando la versione sequenziale che evita anche l'inizializzazione e finalizzazione di MPI.
 
 1. ```bash
-    gcc -o sequential_nBody sequential_nBody.c -lm
+    gcc -o sequential sequential_nBody.c -lm
     ```
 
 2. ```bash
-    ./sequential_nBody [numero di particelle] 
-    esempio -> ./sequential_nBody 1000
+    ./sequential [numero di particelle] 
+    esempio -> ./sequential 1000
     ```
     **OPPURE**
 
  1. ```bash
-    mpicc -o parallel_nBody parallel_nBody_v4.0.c -lm
+    mpicc -o parallel parallel_nBody.c -lm
     ```
 
 2. ```bash
-    mpirun -np 1 parallel_nBody [numero di particelle]
-    esempio -> mpirun -np 1 parallel_nBody 1000
+    mpirun -np 1 parallel [numero di particelle]
+    esempio -> mpirun -np 1 parallel 1000
     ```
 
-- L'output della versione sequenziale verrà scritto sul file *(sequential_output.txt)*. E' stato poi realizzato un programma *(output_correctness.c)* che mette a confronto il contenuto di questi file per verificarne la correttezza.
+- L'output della versione sequenziale verrà scritto sul file *(sequential_output.txt)*. E' stato poi realizzato un programma *(output_correctness.c)* che mette a confronto il contenuto del file con l'output sequenziale e del file con l'output parallelo per verificarne la correttezza.
 
 - Dopo aver eseguito il programma sia nella versione parallela che quella sequenziale come indicato precedentemente è possibile eseguire il test di correttezza nel seguente modo:
 
