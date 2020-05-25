@@ -1,4 +1,3 @@
-<link href="style.css" rel="stylesheet"></link>
 
 | N-Body Simulation | Nicola De Cristofaro | Data di consegna |
 | --- | --- | --- |
@@ -207,55 +206,102 @@ Possiamo ora procedere con la descrizione dei risultati dati dalla misurazione d
 
 ### Strong Scaling
 
-In questo tipo di misurazione la taglia del problema (il numero di particelle) resta fissata ma il numero di processori aumenta. 
+In questo tipo di misurazione la taglia del problema (il numero di particelle) resta fissata ma il numero di processori aumenta (da 1 a number-of-vcp x number-of-instances). 
 
-|   P	|   N	|   Computation Time	|
-|:-:	|:-:	|:-:	|
-|   1	|  100 000	|   	|
-|   2	|  100 000 	|   	|
-|   3	|  100 000	|   	|
-|   4	|  100 000 	|   	|
-|   5	|  100 000 	|   	|
-|   6	|  100 000 	|   	|
-|   7	|  100 000 	|   	|
-|   8	|  100 000 	|   	|
-|   9	|  100 000 	|   	|
-|   10	|  100 000 	|   	|
-|   11	|  100 000 	|   	|
-|   12	|  100 000 	|   	|
-|   13	|  100 000 	|   	|
-|   14	|  100 000 	|   	|
-|   15	|  100 000 	|   	|
-|   16	|  100 000 	|   	|
+**Quindi usando un'istanza EC2 di AWS di tipo *t2.large* che possiede 2 vCPU il cluster su cui verrà effettuato il benchmarking sarà formato da 8 istanze ognuna avente 2 vCPU quindi i processori possono aumentare da 1 a 16.**
 
+|   P	|   N	|   Avg Iteration Time (seconds)	|   Total Computation Time (seconds)	|
+|:-:	|:-:	|:-:	|:-:	|
+|   1	|  100 000	|   220.005443	|   2200.054430 ≅ 37 min	|
+|   2	|  100 000 	|   109.134224 	|   1091.342241 	|
+|   3	|  100 000	|   73.359361	|   733.593608 	|
+|   4	|  100 000 	|   54.819589	|   548.195891  |
+|   5	|  100 000 	|   43.785572	|   437.855721	|
+|   6	|  100 000 	|   36.821113	|   368.211132 	|
+|   7	|  100 000 	|   31.567646	|   315.676457 	|
+|   8	|  100 000 	|   27.412049	|   274.120492  |
+|   9	|  100 000 	|   24.375618	|   243.756177 	|
+|   10	|  100 000 	|   21.972933	|   219.729333 	|
+|   11	|  100 000 	|   20.238017	|   202.380169 	|
+|   12	|  100 000 	|   18.540094	|   185.400640 	|
+|   13	|  100 000 	|   17.049654	|   170.496536 	|
+|   14	|  100 000 	|   15.787466	|   157.874664 	|
+|   15	|  100 000 	|   14.750758	|   147.507577 	|
+|   16	|  100 000 	|   13.837183	|   138.371826 	|
 
+![](./benchmarking_screenshots/strong_scaling_screenshots/strong_scaling_graph.png)
+
+Dalle misurazioni effettuate per verificare la **strong scalability** abbiamo notato come su una stessa taglia di input, l'aggiunta di processori ha migliorato il tempo di esecuzione, ma ovviamente per ogni processore aggiunto il miglioramento non è stato costante poichè più processori partecipavano alla computazione, maggiore era l'overhead prodotto dalla comunicazione di questi. Nel nostro test fino a 16 processori il tempo di esecuzione è sempre diminuito ma abbiamo cominciato ad intravedere un punto di stop al miglioramento verso la fine, infatti con il passaggio da 15 a 16 processori il tempo di computazione è stato ridotto minimamente. Se fossimo andati avanti, aggiungendo altri processori saremmo arrivati ad un punto in cui il tempo di esecuzione non diminuiva più, ma cominciava ad aumentare poichè l'overhead prodotto era maggiore del miglioramento di prestazioni.
 
 ### Weak Scaling
 
 In questo caso la taglia del problema aumenta con l'aumentare del numero di processori, facendo in modo che il workload sia sempre equamente distribuito tra i processori.
 
-|   P	|   N	|   Computation Time	|
-|:-:	|:-:	|:-:	|
-|   1	|  10 000	|   	|
-|   2	|  20 000 	|   	|
-|   3	|  30 000	|   	|
-|   4	|  40 000 	|   	|
-|   5	|  50 000 	|   	|
-|   6	|  60 000 	|   	|
-|   7	|  70 000 	|   	|
-|   8	|  80 000 	|   	|
-|   9	|  90 000 	|   	|
-|   10	|  100 000 	|   	|
-|   11	|  110 000 	|   	|
-|   12	|  120 000 	|   	|
-|   13	|  130 000 	|   	|
-|   14	|  140 000 	|   	|
-|   15	|  150 000 	|   	|
-|   16	|  160 000 	|   	|
+|   P	|   N	|   Avg Iteration Time (seconds)	|   Total Computation Time (seconds)	|
+|:-:	|:-:	|:-:	|:-:	|
+|   1	|  10 000	|   1.961227	|   19.612270	|
+|   2	|  20 000 	|   3.921892	|   39.218918	|
+|   3	|  30 000	|   5.893506	|   58.935057	|
+|   4	|  40 000 	|   7.872926	|   78.729259	|
+|   5	|  50 000 	|   10.999243	|   109.992425	|
+|   6	|  60 000 	|   13.164654	|   131.645642	|
+|   7	|  70 000 	|   15.374346	|   153.743464	|
+|   8	|  80 000 	|   17.566746	|   175.667462	|
+|   9	|  90 000 	|   19.766140	|   197.661402	|
+|   10	|  100 000 	|   21.990926	|   219.909259	|
+|   11	|  110 000 	|   24.507350	|   245.073497	|
+|   12	|  120 000 	|   26.600296	|   266.022962	|
+|   13	|  130 000 	|   28.731199	|   287.311988	|
+|   14	|  140 000 	|   30.937833	|   309.378334	|
+|   15	|  150 000 	|   33.151154	|   331.511537	|
+|   16	|  160 000 	|   35.357112	|   353.571116	|
+
+![](./benchmarking_screenshots/weak_scaling_screenshots/weak_scaling_graphic.png)
+
+Il grafico ideale della performance di **weak scalability** sarebbe una linea retta poichè l'aumento della taglia dell'input è collegato all'aumento del numero di processori, quindi se il workload è sempre equamente distrubuito il tempo di computazione dovrebbe essere sempre lo stesso. Purtroppo questo non accade poichè, come abbiamo già detto, per ogni processore aggiunto viene prodotta una quantità maggiore di overhead, dovuto principalmente alla comunicazione tra i processori. Dal nostro esperimento abbiamo avuto comunque buoni risultati poichè con l'aumentare dei processori e della taglia dell'input il tempo di esecuzione è aumentato minimamente ad ogni step, rimanendo relativamente vicino all'ideale.
 
 ### Speedup
+Un'ultima metrica di misurazione delle performance che consideriamo è lo speedup che rappresenta il miglioramento delle prestazioni di un programma dovuto a un'esecuzione parallela rispetto a una sequenziale.
+
+Di solito il meglio in cui possiamo sperare è di dividere il lavoro tra i processori senza aggiungere ulteriore tempo di lavoro extra. In una situazione del genere se lanciamo il nostro programma con P processori allora il programma eseguirà P volte più velocemente del programma sequenziale. Se questo accade diciamo che il programma parallelo ha **speedup lineare**.
+
+In pratica, difficilmente riusciamo ad ottenere questo tipo di speedup poichè l'uso di più processori introduce nella maggior parte dei casi un tempo di "overhead" ovvero un tempo extra impiegato principalmente per operazioni di comunicazione tra i processori.
+
+Di seguito i valori relativi allo speedup calcolato nel seguente modo:
+
+$$ S(P,N) = \frac{T(1,N)}{T(P,N)} $$
+
+dove :
++ **P = numero di processori usati**
++ **N = taglia dell'input**
+
+|   P	|   N	|   Speedup	|
+|:-:	|:-:	|:-:	|
+|   1	|  100 000	|  1.0 |
+|   2	|  100 000 	|  2.0 |
+|   3	|  100 000	|  3.0	|
+|   4	|  100 000 	|  4.0 |
+|   5	|  100 000 	|  5.0 |
+|   6	|  100 000 	|  5.9 |
+|   7	|  100 000 	|  6.9 |
+|   8	|  100 000 	|  8.0 |
+|   9	|  100 000 	|  9.0 |
+|   10	|  100 000 	|  10.0 |
+|   11	|  100 000 	|  10.9 |
+|   12	|  100 000 	|  11.9 |
+|   13	|  100 000 	|  12.8 |
+|   14	|  100 000 	|  13.8 |
+|   15	|  100 000 	|  14.8 |
+|   16	|  100 000 	|  15.8 |
+
+![](./benchmarking_screenshots/speedup.png)
+
+Abbiamo notato come, sorprendentemente, lo **speedup** è sempre stato molto vicino all'ideale (speedup lineare), questo perchè lo speedup è calcolato in funzione di quante operazioni riusciamo ad eseguire in parallelo e non dal numero di processori coinvolti nel calcolo. Nel nostro caso abbiamo avuto ottimi risultati poichè, tranne per alcune istruzioni in più eseguite dal processore MASTER, tutte le istruzione del programma sono state eseguite in parallelo.
 
 
+# Conclusioni
+
+Dalle considerazione effettuate sulla strong scalability, weak scalability e sullo speedup possiamo concludere che abbiamo raggiunto buoni risultati e notato evidenti miglioramenti con l'aggiunta di altri processori. Infatti essendo un problema di complessità quadratica il tempo di esecuzione sequenziale era davvero elevato (su taglia di input 100 000 il tempo totale di esecuzione era circa 37 minuti). Impiegando 16 processori in parallelo il tempo totale di computazione è diminuito fino a circa 2 minuti, notando così la potenza di una computazione parallela.
 
 
 
