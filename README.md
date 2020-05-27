@@ -206,9 +206,13 @@ Possiamo ora procedere con la descrizione dei risultati dati dalla misurazione d
 
 ### Strong Scaling
 
-In questo tipo di misurazione la taglia del problema (il numero di particelle) resta fissata ma il numero di processori aumenta (da 1 a number-of-vcp x number-of-instances). 
+In questo tipo di misurazione la taglia del problema (il numero di particelle) resta fissata ma il numero di processori aumenta. 
 
-**Quindi usando un'istanza EC2 di AWS di tipo *t2.large* che possiede 2 vCPU il cluster su cui verrà effettuato il benchmarking sarà formato da 8 istanze ognuna avente 2 vCPU quindi i processori possono aumentare da 1 a 16.**
+![](./benchmarking_screenshots/instances_32.png)
+
+**Per il testi di strong scaling il range di aumento del numero dei processori è stato fissato da 1 a 32 poichè 32 è il massimo numero di core che è possibile usare con un account AWS Educate**
+
+![](./benchmarking_screenshots/cpu_32_limit.png)
 
 |   P	|   N	|   Avg Iteration Time (seconds)	|   Total Computation Time (seconds)	|
 |:-:	|:-:	|:-:	|:-:	|
@@ -228,10 +232,26 @@ In questo tipo di misurazione la taglia del problema (il numero di particelle) r
 |   14	|  100 000 	|   15.787466	|   157.874664 	|
 |   15	|  100 000 	|   14.750758	|   147.507577 	|
 |   16	|  100 000 	|   13.837183	|   138.371826 	|
+|   17	|  100 000 	|   12.937212	|   129.372124	|
+|   18	|  100 000 	|   12.210964	|   122.109644 	|
+|   19	|  100 000 	|   11.575181	|   115.751814  |
+|   20	|  100 000 	|   10.975263	|   109.752627 	|
+|   21	|  100 000 	|   10.547308	|   105.473079  |
+|   22	|  100 000 	|   9.991014	|   99.910142   |
+|   23	|  100 000 	|   9.599492	|   95.994917   |
+|   24	|  100 000 	|   9.162451	|   91.624507   |
+|   25	|  100 000 	|   8.797949	|   87.979485   |
+|   26	|  100 000 	|   8.514978	|   85.149779   |
+|   27	|  100 000 	|   8.152149	|   81.521492   |
+|   28	|  100 000 	|   7.863964	|   78.639643   |
+|   29	|  100 000 	|   7.639826	|   76.398257   |
+|   30	|  100 000 	|   7.336128	|   73.361283   |
+|   31	|  100 000 	|   7.095153	|   70.951534   |
+|   32	|  100 000 	|   6.880448	|   68.804478   |
 
 ![](./benchmarking_screenshots/strong_scaling_screenshots/strong_scaling_graph.png)
 
-Dalle misurazioni effettuate per verificare la **strong scalability** abbiamo notato come su una stessa taglia di input, l'aggiunta di processori ha migliorato il tempo di esecuzione, ma ovviamente per ogni processore aggiunto il miglioramento non è stato costante poichè più processori partecipavano alla computazione, maggiore era l'overhead prodotto dalla comunicazione di questi. Nel nostro test fino a 16 processori il tempo di esecuzione è sempre diminuito ma abbiamo cominciato ad intravedere un punto di stop al miglioramento verso la fine, infatti con il passaggio da 15 a 16 processori il tempo di computazione è stato ridotto minimamente. Se fossimo andati avanti, aggiungendo altri processori saremmo arrivati ad un punto in cui il tempo di esecuzione non diminuiva più, ma cominciava ad aumentare poichè l'overhead prodotto era maggiore del miglioramento di prestazioni.
+Dalle misurazioni effettuate per verificare la **strong scalability** abbiamo notato come su una stessa taglia di input, l'aggiunta di processori ha migliorato il tempo di esecuzione, ma ovviamente per ogni processore aggiunto il miglioramento non è stato costante poichè più processori partecipavano alla computazione, maggiore era l'overhead prodotto dalla comunicazione di questi. Nel nostro test fino a 32 processori il tempo di esecuzione è sempre diminuito ma più il numero di processori aumentava più il miglioramento delle prestazioni diminuiva. Se fossimo andati avanti, aggiungendo altri processori saremmo arrivati ad un punto in cui il tempo di esecuzione non diminuiva più, ma cominciava ad aumentare poichè l'overhead prodotto era maggiore del miglioramento di prestazioni.
 
 ### Weak Scaling
 
@@ -279,7 +299,7 @@ dove :
 |:-:	|:-:	|:-:	|
 |   1	|  100 000	|  1.0 |
 |   2	|  100 000 	|  2.0 |
-|   3	|  100 000	|  3.0	|
+|   3	|  100 000	|  3.0 |
 |   4	|  100 000 	|  4.0 |
 |   5	|  100 000 	|  5.0 |
 |   6	|  100 000 	|  5.9 |
@@ -289,19 +309,37 @@ dove :
 |   10	|  100 000 	|  10.0 |
 |   11	|  100 000 	|  10.9 |
 |   12	|  100 000 	|  11.9 |
-|   13	|  100 000 	|  12.8 |
-|   14	|  100 000 	|  13.8 |
-|   15	|  100 000 	|  14.8 |
-|   16	|  100 000 	|  15.8 |
+|   13	|  100 000 	|  12.9 |
+|   14	|  100 000 	|  13.9 |
+|   15	|  100 000 	|  14.9 |
+|   16	|  100 000 	|  15.9 |
+|   17	|  100 000 	|  17.0 |
+|   18	|  100 000 	|  18.0 |
+|   19	|  100 000 	|  19.0 |
+|   20	|  100 000 	|  20.0 |
+|   21	|  100 000 	|  20.9 |
+|   22	|  100 000 	|  22.0 |
+|   23	|  100 000 	|  22.9 |
+|   24	|  100 000 	|  24.0 |
+|   25	|  100 000 	|  25.0 |
+|   26	|  100 000 	|  25.8 |
+|   27	|  100 000 	|  27.0 |
+|   28	|  100 000 	|  28.0 |
+|   29	|  100 000 	|  28.8 |
+|   30	|  100 000 	|  30.0 |
+|   31	|  100 000 	|  31.0 |
+|   32	|  100 000 	|  32.0 |
 
-![](./benchmarking_screenshots/speedup.png)
+![](./benchmarking_screenshots/speedup_32.png)
 
 Abbiamo notato come, sorprendentemente, lo **speedup** è sempre stato molto vicino all'ideale (speedup lineare), questo perchè lo speedup è calcolato in funzione di quante operazioni riusciamo ad eseguire in parallelo e non dal numero di processori coinvolti nel calcolo. Nel nostro caso abbiamo avuto ottimi risultati poichè, tranne per alcune istruzioni in più eseguite dal processore MASTER, tutte le istruzione del programma sono state eseguite in parallelo.
+
+Inoltre la comunicazione tra i processori è effettuata interamente utilizzando funzioni di comunicazione collettiva della libreria MPI e questo è un altro fattore che migliora le prestazioni poichè fa in modo che qualsiasi nodo con le informazioni ricevute partecipi all'invio delle informazioni ad altri nodi.
 
 
 # Conclusioni
 
-Dalle considerazione effettuate sulla strong scalability, weak scalability e sullo speedup possiamo concludere che abbiamo raggiunto buoni risultati e notato evidenti miglioramenti con l'aggiunta di altri processori. Infatti essendo un problema di complessità quadratica il tempo di esecuzione sequenziale era davvero elevato (su taglia di input 100 000 il tempo totale di esecuzione era circa 37 minuti). Impiegando 16 processori in parallelo il tempo totale di computazione è diminuito fino a circa 2 minuti, notando così la potenza di una computazione parallela.
+Dalle considerazione effettuate sulla strong scalability, weak scalability e sullo speedup possiamo concludere che abbiamo raggiunto buoni risultati e notato evidenti miglioramenti con l'aggiunta di altri processori. Infatti essendo un problema di complessità quadratica il tempo di esecuzione sequenziale era davvero elevato (su taglia di input 100 000 il tempo totale di esecuzione era circa 37 minuti). Impiegando 32 processori in parallelo il tempo totale di computazione è diminuito fino a circa 1 minuto, notando così la potenza di una computazione parallela.
 
 
 
