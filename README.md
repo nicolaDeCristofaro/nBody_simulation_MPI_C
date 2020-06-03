@@ -3,7 +3,7 @@
 | --- | --- | --- |
 
 # Descrizione del problema
-In fisica, il problema n-body consiste nel predire i  singoli movimenti di un gruppo di oggetti celesti che interagiscono tra loro in modo gravitazionale. La risoluzione di questo problema è stata motivata dal desiderio di comprendere i movimenti del Sole, della Luna, dei pianeti e delle stelle visibili.
+In fisica, il problema n-body consiste nel predire i singoli movimenti di un gruppo di oggetti celesti che interagiscono tra loro in modo gravitazionale. La risoluzione di questo problema è stata motivata dal desiderio di comprendere i movimenti del Sole, della Luna, dei pianeti e delle stelle visibili.
 
 <div style="text-align:center">
     <img alt="nBodySimulation1" src="./images/nbody1.gif" height="232" width="328"/>
@@ -30,7 +30,7 @@ Per la creazione e inizializzazione delle particelle eseguire i seguenti comandi
     ```
 
 ### Inizializzazione di MPI, variabili e allocazione memoria
-La prima parte del programma parte con la definizione di variabili utili alla computazione, variabili per prendere i tempi di esecuzione e infine variabili per l'uso di MPI. Oltre alle operazioni sempre presenti come MPI_Init, MPI_Comm_size per conoscere il numero di processori che stanno eseguendo o MPI_Comm_rank per conoscere il rank del processore corrente, è stata fatta un'altra operazione per creare un tipo di dato derivato al fine di permettere la comunicazione tra i processori del tipo di dato Particle.
+La prima parte del programma si occupa della definizione di variabili utili alla computazione, variabili per prendere i tempi di esecuzione e infine variabili per l'uso di MPI. Oltre alle operazioni sempre presenti come MPI_Init, MPI_Comm_size per conoscere il numero di processori che stanno eseguendo o MPI_Comm_rank per conoscere il rank del processore corrente, è stata fatta un'altra operazione per creare un tipo di dato derivato al fine di permettere la comunicazione tra i processori del tipo di dato Particle.
 
 ```c
     MPI_Type_contiguous(7, MPI_FLOAT, &particle_type);
@@ -83,6 +83,9 @@ Viene quindi eseguita la funzione per distribuire equamente il lavoro tra i proc
                 printf("\nImpossibile aprire il file.\n");
                 exit(EXIT_FAILURE);
             }
+
+            /* Check errori sul numero di particelle lette */
+            // ...
 
             fread(particles, sizeof(Particle) * num_particles, 1, fileRead);
             fclose(fileRead);
@@ -197,6 +200,10 @@ int compare_float(float f1, float f2){
         return 0;
 }
 ```
+
+- **Visualizzazione grafica della correttezza della soluzione parallela su input piccolo (5)**
+
+![](./images/correctness_5.png)
 
 # Problem evaluation and Benchmarks
 
