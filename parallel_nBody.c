@@ -17,6 +17,7 @@ typedef struct {
 //Definizione delle funzioni
 void compute_equal_workload_for_each_task(int *dim_portions, int *displs, int arraysize, int numtasks);
 void bodyForce(Particle *all_particles, Particle *my_portion, float dt, int dim_portion, int num_particles);
+int convertStringToInt(char *str);
 
 
 int main(int argc, char* argv[]){
@@ -33,7 +34,8 @@ int main(int argc, char* argv[]){
     int num_particles = 1000;  //Numero delle particelle di DEFAULT se nessun parametro è fornito sulla command-line
     if(argc > 1){
         // E' stato fornito il parametro da linea di comando che indica il numero di particelle
-        num_particles = atoi(argv[1]);
+        //Converti stringa a intero
+        num_particles = convertStringToInt(argv[1]);
     }
         
     /*** Inizialliza MPI ***/
@@ -204,3 +206,26 @@ void bodyForce(Particle *all_particles, Particle *my_portion, float dt, int dim_
     }
 }
 
+
+/*Conversione da stringa a intero*/
+int convertStringToInt(char *str){
+    char *endptr;
+    long val;  
+    errno = 0;  //Per distinguere successo/fallimento dopo la chiamata
+
+    val = strtol(str, &endptr, 10);
+
+    /* Check possibili errori */
+    if ((errno == ERANGE && (val == LONG_MAX || val == LONG_MIN)) || (errno != 0 && val == 0)) {
+        perror("strtol");
+        exit(EXIT_FAILURE);
+    }
+
+    if (endptr == str) {
+        fprintf(stderr, "No digits were found\n");
+        exit(EXIT_FAILURE);
+    }
+
+    /* Se siamo qui, strtol() ha convertito un numero correttamente */
+    return (int)val;
+}
