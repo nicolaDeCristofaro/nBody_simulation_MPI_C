@@ -1,7 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include <float.h>
+#include <limits.h>
+#include <errno.h>
 
 typedef struct{
     float mass;
@@ -9,17 +10,10 @@ typedef struct{
     float vx, vy, vz;
 } Particle;
 
+/* Definzione di funzioni */
+int compare_float(float f1, float f2);
+int convertStringToInt(char *str);
 
-//confronta due float e ritorna 1 se sono uguali 0 altrimenti
-int compare_float(float f1, float f2){
-
-    float precision = 0.01f;
-    if (((f1 - precision) < f2) &&
-        ((f1 + precision) > f2))
-        return 1;
-    else
-        return 0;
-}
 
 /*Programma per valutare la correttezza dell'implementazione parallela:
 Confronta l'output della versione sequenziale con l'output della soluzione parallela*/
@@ -31,7 +25,8 @@ int main(int argc, char *argv[]){
     int num_particles = 1000;  //Numero delle particelle di DEFAULT se nessun parametro è fornito sulla command-line
     if(argc > 1){
         // E' stato fornito il parametro da linea di comando che indica il numero di particelle
-        num_particles = atoi(argv[1]);
+        //Converti stringa a intero
+        num_particles = convertStringToInt(argv[1]);
     }
 
     /* fopen() ritorna NULL se non riesce ad aprire un file nella modalità indicata. */
@@ -45,13 +40,25 @@ int main(int argc, char *argv[]){
     Particle *seq_particles = (Particle *)malloc(num_particles * sizeof(Particle));
     Particle *par_particles = (Particle *)malloc(num_particles * sizeof(Particle));
 
-    //Leggo lo stato finale delle particelle dalla computazione sequenziale e da quella parallela
-    fread(seq_particles, sizeof(Particle) * num_particles, 1, seq_file);
-    fread(par_particles, sizeof(Particle) * num_particles, 1, par_file);
+    /* Leggo lo stato finale delle particelle dalla computazione sequenziale e da quella parallela */
+    int seq_particles_read = fread(seq_particles, sizeof(Particle) * num_particles, 1, seq_file);
+    int par_particles_read = fread(par_particles, sizeof(Particle) * num_particles, 1, par_file);
+
+    /* Controllo errori nel numero di particelle lette */
+    if( seq_particles_read == 0){
+        /*il numero di particelle da leggere è maggiore del numero di particelle nel file*/
+        printf("ERROR: Il numero di particelle da leggere è maggiore del numero di particelle nel file (sequential_output.txt)\n");
+        exit(EXIT_FAILURE);
+    }
+    if( par_particles_read == 0){
+        /*il numero di particelle da leggere è maggiore del numero di particelle nel file*/
+        printf("ERROR: Il numero di particelle da leggere è maggiore del numero di particelle nel file (arallel_output.txt)\n");
+        exit(EXIT_FAILURE);
+    }
 
     /*Verifico se lo stato finale delle particelle dopo la computazione sequenziale 
     è uguale a quello delle particelle dopo la computazione parallela*/
-    int flag = 1; //flag rimarrà uguale a 1 se i due autput sono uguali altrimenti sarà 0
+    int flag = 1;   //flag rimarrà uguale a 1 se i due autput sono uguali altrimenti sarà 0
     for (int i = 0; i < num_particles; i++){
         if (!compare_float(seq_particles[i].x, par_particles[i].x)){
             printf("Difference in member [%d].x \n", i);
@@ -89,4 +96,38 @@ int main(int argc, char *argv[]){
     free(par_particles);
 
     return 0;
+}
+
+/* Confronta due float e ritorna 1 se sono uguali 0 altrimenti*/
+int compare_float(float f1, float f2){
+
+    float precision = 0.01f;
+    if (((f1 - precision) < f2) &&
+        ((f1 + precision) > f2))
+        return 1;
+    else
+        return 0;
+}
+
+/*Conversione da stringa a intero*/
+int convertStringToInt(char *str){
+    char *endptr;
+    long val;  
+    errno = 0;  //Per distinguere successo/fallimento dopo la chiamata
+
+    val = strtol(str, &endptr, 10);
+
+    /* Check possibili errori */
+    if ((errno == ERANGE && (val == LONG_MAX || val == LONG_MIN)) || (errno != 0 && val == 0)) {
+        perror("strtol");
+        exit(EXIT_FAILURE);
+    }
+
+    if (endptr == str) {
+        fprintf(stderr, "No digits were found\n");
+        exit(EXIT_FAILURE);
+    }
+
+    /* Se siamo qui, strtol() ha convertito un numero correttamente */
+    return (int)val;
 }

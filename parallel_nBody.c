@@ -1,6 +1,8 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <limits.h>
+#include <errno.h>
 #include <mpi.h>
 
 #define MASTER 0            // Rank del processore MASTER 
