@@ -43,7 +43,6 @@ int main(int argc, char* argv[]){
     MPI_Type_contiguous(7, MPI_FLOAT, &particle_type);
     MPI_Type_commit(&particle_type);
     
-    
     /*** Ottengo il numero di processori usati e il rank del processo corrente ***/
     MPI_Comm_size(MPI_COMM_WORLD, &numtasks);
     MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
@@ -55,9 +54,8 @@ int main(int argc, char* argv[]){
     displ = (int*) malloc(sizeof(int)*numtasks);
     compute_equal_workload_for_each_task(dim_portions, displ, num_particles, numtasks);
 
-
     const float dt = 0.01f; // time step
-
+    
     Particle *particles = (Particle*) malloc(num_particles * sizeof(Particle));
     my_portion = (Particle*) malloc(sizeof(Particle) * dim_portions[myrank]);
     Particle *gathered_particles = NULL;
@@ -66,7 +64,7 @@ int main(int argc, char* argv[]){
     for(int iteration = 0; iteration < I; iteration++) {
 
         MPI_Barrier(MPI_COMM_WORLD);  //Sincronizzo i processi prima di cominciare a prendere il tempo di esecuzione dell'iterazione
-        iterStart = MPI_Wtime();	
+        iterStart = MPI_Wtime();
 
         if(iteration == 0){
             //E' la prima iterazione quindi tutti i processori possono leggere lo stato iniziale delle particelle da file
@@ -77,10 +75,16 @@ int main(int argc, char* argv[]){
                 exit(EXIT_FAILURE);
             }
 
-            fread(particles, sizeof(Particle) * num_particles, 1, fileRead);
+            int particlesRead = fread(particles, sizeof(Particle) * num_particles, 1, fileRead);
+            if( particlesRead == 0){
+                /*il numero di particelle da leggere è maggiore del numero di particelle nel file*/
+                printf("ERROR: Il numero di particelle da leggere è maggiore del numero di particelle nel file\n");
+                exit(EXIT_FAILURE);
+            }
+
             fclose(fileRead);
         }else{
-            //il processore MASTER ha l'array di particelle output della precedente iterazione quindi spedisce in broadcast
+            //il processore MASTER ha l'array di particelle output della computazine precedente quindi spedisce in broadcast
             MPI_Bcast(particles, num_particles, particle_type, MASTER, MPI_COMM_WORLD);
         }
 
@@ -105,9 +109,8 @@ int main(int argc, char* argv[]){
 
     if(myrank == MASTER) {
         double totalTime = end-start;
-        double avgTime = totalTime / (double)(I);
-        printf("\nComputation completed\n");
-        printf("Avg iteration time: %f seconds\n", avgTime);
+        double avgTime = totalTime / (double)(I); 
+        printf("\nAvg iteration time: %f seconds\n", avgTime);
         printf("Total time: %f seconds\n", totalTime);
 	}
 

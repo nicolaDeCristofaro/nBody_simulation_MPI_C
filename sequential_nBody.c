@@ -53,6 +53,7 @@ int main(int argc, char* argv[]){
     }
     fclose(fileRead);
 
+    /* TEST: decommenta per scrivere su stdout lo stato iniziale delle particelle dopo la lettura da file
     printf("INPUT\n");
     for(int i=0; i< nBodies; i++){
         printf("[%d].x = %f\t", i, particles[i].x);
@@ -62,7 +63,7 @@ int main(int argc, char* argv[]){
         printf("[%d].vy = %f\t", i, particles[i].vy);
         printf("[%d].vz = %f\t", i, particles[i].vz);
         printf("\n");
-    }
+    }*/
 
     for (int iter = 1; iter <= nIters; iter++){
         startIter = clock();
@@ -85,6 +86,7 @@ int main(int argc, char* argv[]){
     printf("\nAvg iteration time: %f seconds\n", avgTime);
     printf("Total time: %f seconds\n", totalTime);
 
+    /* TEST: decommenta per scrivere su stdout lo stato finale delle particelle dopo la computazione
     printf("OUTPUT\n");
     for (int i = 0; i < nBodies; i++){
         printf("[%d].x = %f  ", i, particles[i].x);
@@ -94,7 +96,7 @@ int main(int argc, char* argv[]){
         printf("[%d].vy = %f  ", i, particles[i].vy);
         printf("[%d].vz = %f  ", i, particles[i].vz);
         printf("\n");
-    }
+    }*/
 
     /*Scrivo l'output su file per poi poterne valutare la correttenza confrontando con l'output parallelo*/
     FILE *fileWrite = fopen("sequential_output.txt", "w");

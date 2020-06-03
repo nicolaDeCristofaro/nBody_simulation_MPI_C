@@ -75,7 +75,27 @@ int main(int argc, char* argv[]){
                 exit(EXIT_FAILURE);
             }
 
-            fread(particles, sizeof(Particle) * num_particles, 1, fileRead);
+            int particlesRead = fread(particles, sizeof(Particle) * num_particles, 1, fileRead);
+            if( particlesRead == 0){
+                /*il numero di particelle da leggere è maggiore del numero di particelle nel file*/
+                printf("ERROR: Il numero di particelle da leggere è maggiore del numero di particelle nel file\n");
+                exit(EXIT_FAILURE);
+            }
+
+            /* TEST: decommenta per scrivere su stdout lo stato iniziale delle particelle dopo la lettura da file
+            if(myrank == MASTER){
+                printf("INPUT\n");
+                for (int i = 0  ; i < num_particles; i++) { 
+                    printf("[%d].x = %f\t", i, particles[i].x);
+                    printf("[%d].y = %f\t", i, particles[i].y);
+                    printf("[%d].z = %f\t", i, particles[i].z);
+                    printf("[%d].vx = %f\t", i, particles[i].vx);
+                    printf("[%d].vy = %f\t", i, particles[i].vy);
+                    printf("[%d].vz = %f\t", i, particles[i].vz);
+                    printf("\n");
+                }
+            }*/
+
             fclose(fileRead);
         }else{
             //il processore MASTER ha l'array di particelle output della computazine precedente quindi spedisce in broadcast
