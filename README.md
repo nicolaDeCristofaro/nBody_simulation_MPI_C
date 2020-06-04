@@ -298,6 +298,8 @@ L'efficienza invece è definita come il rapporto tra speedup e numero di process
 
 Di seguito i valori relativi allo speedup e all'efficienza calcolati nel seguente modo:
 
+**Speedup**
+
 $$ S(P,N) = \frac{T(1,N)}{T(P,N)} $$
 
 **Efficiency**
