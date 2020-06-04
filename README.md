@@ -17,7 +17,7 @@ La soluzione proposta ha una complessità quadratica rispetto alla taglia dell'i
 
 # Struttura della soluzione
 
-### Inizializzazione
+## Inizializzazione
 Per la fase di inizializzazione è stata adottata la tecnica di creare le particelle in un file e inizializzarle usando un algoritmo deterministico per randomizzare i valori delle particelle. In questo modo tutti i processori alla prima iterazione della computazione partono leggendo da questo file *(particles.txt)*.
 
 Per la creazione e inizializzazione delle particelle eseguire i seguenti comandi:
@@ -29,7 +29,7 @@ Per la creazione e inizializzazione delle particelle eseguire i seguenti comandi
     ./initialization [numero di particelle] (esempio -> ./initialization 1000)
     ```
 
-### Inizializzazione di MPI, variabili e allocazione memoria
+## Inizializzazione di MPI, variabili e allocazione memoria
 La prima parte del programma si occupa della definizione di variabili utili alla computazione, variabili per prendere i tempi di esecuzione e infine variabili per l'uso di MPI. Oltre alle operazioni sempre presenti come MPI_Init, MPI_Comm_size per conoscere il numero di processori che stanno eseguendo o MPI_Comm_rank per conoscere il rank del processore corrente, è stata fatta un'altra operazione per creare un tipo di dato derivato al fine di permettere la comunicazione tra i processori del tipo di dato Particle.
 
 ```c
@@ -47,7 +47,7 @@ dove la struttura Particle è la seguente:
     } Particle;
 ```
 
-### Distribuziona equa del workload tra i processori
+## Distribuziona equa del workload tra i processori
 Viene quindi eseguita la funzione per distribuire equamente il lavoro tra i processori. Dopo l'esecuzione di questa funzione nell'array dim_portions ogni indice è associato al rank di un processore e il suo contenuto rappresenta la dimensione della porzione di array su cui quel processore dovrà computare. Inoltre viene impostato l'array dei displacements in cui ogni indice rappresenta lo start_offset di un processore.
 
 ```c
@@ -66,7 +66,7 @@ Viene quindi eseguita la funzione per distribuire equamente il lavoro tra i proc
     }
 ```
 
-### Computazione e comunicazione tra i processori
+## Computazione e comunicazione tra i processori
 
 - La simulazione avviene per un certo numero di iterazioni I impostato a 10. Inoltre consideriamo il processore con rank 0 il processore MASTER mentre gli altri vengono considerati SLAVES.
 
@@ -131,10 +131,10 @@ Viene quindi eseguita la funzione per distribuire equamente il lavoro tra i proc
     if(myrank == MASTER) printf("Iterazione %d di %d completata in %f seconds\n", iteration, I, (iterEnd-iterStart));
 ```
 
-### Finalizzazione e deallocazione
+## Finalizzazione e deallocazione
 In quest'ultima fase la computazione è conclusa per tutte le I iterazioni quindi viene deallocata tutta la memoria precedentemente allocata, viene finalizzato MPI con MPI_Finalize() e il processore MASTER provvede a scrivere su stdout il tempo medio di esecuzione di un'iterazione e il tempo totale di esecuzione, scrivendo inoltre lo stato finale delle particelle su un file per un eventuale test di correttezza fatto in seguito.
 
-### Compilazione ed esecuzione
+## Compilazione ed esecuzione
 
 #### Compilazione 
 ```bash
@@ -211,7 +211,7 @@ Per la valutazione delle prestazioni della soluzione proposta sono state create 
 
 Possiamo ora procedere con la descrizione dei risultati dati dalla misurazione della scalabilità dell'applicazione. Ci sono due modi di base per misurare la performance parallela di un'applicazione: **strong e weak scaling**.
 
-### Strong Scaling
+## Strong Scaling
 
 In questo tipo di misurazione la taglia del problema (il numero di particelle) resta fissata ma il numero di processori aumenta. 
 
@@ -260,7 +260,7 @@ In questo tipo di misurazione la taglia del problema (il numero di particelle) r
 
 Dalle misurazioni effettuate per verificare la **strong scalability** abbiamo notato come su una stessa taglia di input, l'aggiunta di processori ha migliorato il tempo di esecuzione, ma ovviamente per ogni processore aggiunto il miglioramento non è stato costante poichè più processori partecipavano alla computazione, maggiore era l'overhead prodotto dalla comunicazione di questi. Nel nostro test fino a 32 processori il tempo di esecuzione è sempre diminuito ma più il numero di processori aumentava più il miglioramento delle prestazioni diminuiva. Se fossimo andati avanti, aggiungendo altri processori saremmo arrivati ad un punto in cui il tempo di esecuzione non diminuiva più, ma cominciava ad aumentare poichè l'overhead prodotto era maggiore del miglioramento di prestazioni.
 
-### Weak Scaling
+## Weak Scaling
 
 In questo caso la taglia del problema aumenta con l'aumentare del numero di processori, facendo in modo che il workload sia sempre equamente distribuito tra i processori.
 
@@ -287,7 +287,7 @@ In questo caso la taglia del problema aumenta con l'aumentare del numero di proc
 
 Il grafico ideale della performance di **weak scalability** sarebbe una linea retta poichè l'aumento della taglia dell'input è collegato all'aumento del numero di processori, quindi se il workload è sempre equamente distrubuito il tempo di computazione dovrebbe essere sempre lo stesso. Purtroppo questo non accade poichè, come abbiamo già detto, per ogni processore aggiunto viene prodotta una quantità maggiore di overhead, dovuto principalmente alla comunicazione tra i processori. Dal nostro esperimento abbiamo avuto comunque buoni risultati poichè con l'aumentare dei processori e della taglia dell'input il tempo di esecuzione è aumentato minimamente ad ogni step, rimanendo relativamente vicino all'ideale.
 
-### Speedup ed efficienza
+## Speedup ed efficienza
 Lo speedup è un'altra metrica di misurazione delle performance che rappresenta il miglioramento delle prestazioni di un programma dovuto a un'esecuzione parallela rispetto a una sequenziale.
 
 Di solito il meglio in cui possiamo sperare è di dividere il lavoro tra i processori senza aggiungere ulteriore tempo di lavoro extra. In una situazione del genere se lanciamo il nostro programma con P processori allora il programma eseguirà P volte più velocemente del programma sequenziale. Se questo accade diciamo che il programma parallelo ha **speedup lineare**.
