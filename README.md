@@ -298,11 +298,11 @@ L'efficienza invece è definita come il rapporto tra speedup e numero di process
 
 Di seguito i valori relativi allo speedup e all'efficienza calcolati nel seguente modo:
 
-**Speedup**
 $$ S(P,N) = \frac{T(1,N)}{T(P,N)} $$
 
 **Efficiency**
-$$ E = \frac{S}{P} = \frac{\frac{T(1,N)}{T(P,N)}}{P} = \frac{T(1,N)}{p * T(P,N)}$$
+
+$$ E = \frac{S}{P} = \frac{\frac{T(1,N)}{T(P,N)}}{P} = \frac{T(1,N)}{p * T(P,N)} $$
 
 dove :
 + **P = numero di processori usati**
