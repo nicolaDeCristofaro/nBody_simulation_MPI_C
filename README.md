@@ -1,5 +1,5 @@
 
-| N-Body Simulation | Nicola De Cristofaro | Data di consegna |
+| N-Body Simulation | Nicola De Cristofaro | 05/06/2020 |
 | --- | --- | --- |
 
 # Descrizione del problema
@@ -285,7 +285,7 @@ In questo caso la taglia del problema aumenta con l'aumentare del numero di proc
 
 ![](./benchmarking_screenshots/weak_scaling_screenshots/weak_scaling_graphic.png)
 
-Il grafico ideale della performance di **weak scalability** sarebbe una linea retta poichè l'aumento della taglia dell'input è collegato all'aumento del numero di processori, quindi se il workload è sempre equamente distrubuito il tempo di computazione dovrebbe essere sempre lo stesso. Purtroppo questo non accade poichè, come abbiamo già detto, per ogni processore aggiunto viene prodotta una quantità maggiore di overhead, dovuto principalmente alla comunicazione tra i processori. Dal nostro esperimento abbiamo avuto comunque buoni risultati poichè con l'aumentare dei processori e della taglia dell'input il tempo di esecuzione è aumentato minimamente ad ogni step, rimanendo relativamente vicino all'ideale.
+Il grafico ideale della performance di **weak scalability** sarebbe una linea retta poichè la taglia dell'input è aumentata in proporzione all'aumento del numero di processori, quindi essendo il workload sempre equamente distrubuito il tempo di computazione dovrebbe essere sempre lo stesso. Purtroppo questo non accade poichè, come abbiamo già detto, per ogni processore aggiunto viene prodotta una quantità maggiore di overhead, dovuto principalmente alla comunicazione tra i processori. Dal nostro esperimento abbiamo avuto comunque buoni risultati poichè con l'aumentare dei processori e della taglia dell'input (10.000 particelle in più per ogni processore aggiunto alla computazione) il tempo di esecuzione è aumentato in modo minimo e costante ad ogni step, rimanendo relativamente vicino all'ideale.
 
 ## Speedup ed efficienza
 Lo speedup è un'altra metrica di misurazione delle performance che rappresenta il miglioramento delle prestazioni di un programma dovuto a un'esecuzione parallela rispetto a una sequenziale.
