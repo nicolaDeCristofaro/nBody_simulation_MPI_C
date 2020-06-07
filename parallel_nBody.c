@@ -201,7 +201,7 @@ void bodyForce(Particle *all_particles, Particle *my_portion, float dt, int dim_
     }
 
     //Integro le posizioni della mia porzione
-    for(int i = 0; i < dim_portion; i++) { //può essere anche inserito nel for precedente TODO
+    for(int i = 0; i < dim_portion; i++) {
         my_portion[i].x += my_portion[i].vx * dt;
         my_portion[i].y += my_portion[i].vy * dt;
         my_portion[i].z += my_portion[i].vz * dt;
