@@ -47,8 +47,8 @@ dove la struttura Particle è la seguente:
     } Particle;
 ```
 
-## Distribuziona equa del workload tra i processori
-Viene quindi eseguita la funzione per distribuire equamente il lavoro tra i processori. Dopo l'esecuzione di questa funzione nell'array dim_portions ogni indice è associato al rank di un processore e il suo contenuto rappresenta la dimensione della porzione di array su cui quel processore dovrà computare. Inoltre viene impostato l'array dei displacements in cui ogni indice rappresenta lo start_offset di un processore.
+## Distribuzione equa del workload tra i processori
+Viene quindi eseguita la funzione per distribuire equamente il lavoro tra i processori. Dopo l'esecuzione di questa funzione nell'array *dim_portions* ogni indice è associato al rank di un processore e il suo contenuto rappresenta la dimensione della porzione di array su cui quel processore dovrà computare. Inoltre viene impostato l'array dei displacements in cui ogni indice rappresenta lo start_offset di un processore.
 
 ```c
     void compute_equal_workload_for_each_task(int *dim_portions, int *displs, int arraysize, int numtasks){
@@ -100,6 +100,16 @@ Viene quindi eseguita la funzione per distribuire equamente il lavoro tra i proc
 ```c
     MPI_Scatterv(particles, dim_portions, displ, particle_type,my_portion, dim_portions[myrank], particle_type,MASTER, MPI_COMM_WORLD);
 ```
+dove:
+  - **particles**: indirizzo del buffer di invio (array di tutte le particelle)
+  - **dim_portions**: array di interi che specifica il numero di elementi da inviare ad ogni processore
+  - **displ**: array di interi in cui l'indice i specifica l'offset (relativo a particles) da cui cominciare a prelevare i dati da inviare
+  - **particle_type**: tipo di dato degli elementi da inviare
+  - **my_portion**: indirizzo del buffer di ricezione (porzione di particelle)
+  - **dim_portions[myrank]**: numero di elementi della porzione che il processore deve ricevere
+  - **particle_type**: tipo di dato degli elementi da ricevere
+  - **MASTER**: rank del processore che invia
+  - **MPI_COMM_WORLD**: communicator
 
 3. Ogni processore effettua la computazione sulla sua porzione di array chiamando la funzione *bodyForce* che permette di calcolare i nuovi valori di posizione e velocità di ogni particella.
 
@@ -107,13 +117,56 @@ Viene quindi eseguita la funzione per distribuire equamente il lavoro tra i proc
     bodyForce(particles, my_portion, dt, dim_portions[myrank], num_particles );
 ```
 
+- come possiamo vedere dal codice della funzione, ogni processore esegue la computazione su un sottoinsieme di particelle i cui valori vengono computati in base alla forza esercitata da tutte le altre particelle.
+
+```c
+    /*Funzione che esegue computazione su una specifica porzione di workload */
+    void bodyForce(Particle *all_particles, Particle *my_portion, float dt, int dim_portion, int num_particles) {
+        for (int i = 0; i < dim_portion; i++) { 
+            float Fx = 0.0f; float Fy = 0.0f; float Fz = 0.0f;
+
+            for (int j = 0; j < num_particles; j++) {
+                float dx = all_particles[j].x - my_portion[i].x;
+                float dy = all_particles[j].y - my_portion[i].y;
+                float dz = all_particles[j].z - my_portion[i].z;
+                float distSqr = dx*dx + dy*dy + dz*dz + SOFTENING;
+                float invDist = 1.0f / sqrtf(distSqr);
+                float invDist3 = invDist * invDist * invDist;
+
+                Fx += dx * invDist3; Fy += dy * invDist3; Fz += dz * invDist3;
+            }
+
+            my_portion[i].vx += dt * Fx; 
+            my_portion[i].vy += dt * Fy; 
+            my_portion[i].vz += dt * Fz;
+        }
+
+        //Integro le posizioni della mia porzione
+        for(int i = 0; i < dim_portion; i++) {
+            my_portion[i].x += my_portion[i].vx * dt;
+            my_portion[i].y += my_portion[i].vy * dt;
+            my_portion[i].z += my_portion[i].vz * dt;
+        }
+    }
+```
+
 4. Ogni processore spedisce al MASTER la propria porzione computata quindi dopo questa operazione di gathering il processore MASTER ha l'array di particelle completo e computato per una certa iterazione.
 
 ```c
     MPI_Gatherv(my_portion, dim_portions[myrank], particle_type, gathered_particles, dim_portions, displ, particle_type,MASTER, MPI_COMM_WORLD);
 ```
+dove:
+  - **my_portion**: indirizzo del buffer di invio (porzione di particelle computata)
+  - **dim_portions[myrank]**: numero di elementi della porzione da inviare
+  - **particle_type**: tipo di dato degli elementi da inviare
+  - **gathered_particles**: indirizzo del buffer di ricezione (array di tutte le particelle computate)
+  - **dim_portions**: array di interi che specifica il numero di elementi da ricevere da ogni processore
+  - **displ**: array di interi in cui l'indice i specifica l'offset (relativo a my_portion) da cui cominciare a inserire i dati ricevuti
+  - **particle_type**: tipo di dato degli elementi da ricevere
+  - **MASTER**: rank del processore ricevente
+  - **MPI_COMM_WORLD**: communicator
 
-5. L'input della successiva iterazione dovrà essere l'array di particelle computato nell'iterazione corrente quindi viene effettuato uno swap.
+5. L'input della successiva iterazione dovrà essere l'array di particelle computato nell'iterazione corrente quindi dato che il processore MASTER possiede l'array di particelle computato in *gathered_particles* viene effettuato uno swap.
 
 ```c
     if(myrank == MASTER) particles = gathered_particles;
@@ -128,7 +181,7 @@ Viene quindi eseguita la funzione per distribuire equamente il lavoro tra i proc
     ...
     MPI_Barrier(MPI_COMM_WORLD);  
     iterEnd = MPI_Wtime();
-    if(myrank == MASTER) printf("Iterazione %d di %d completata in %f seconds\n", iteration, I, (iterEnd-iterStart));
+    if(myrank == MASTER) printf("Iterazione %d di %d completata in %f seconds\n", iteration+1, I, (iterEnd-iterStart));
 ```
 
 ## Finalizzazione e deallocazione
@@ -146,6 +199,7 @@ In quest'ultima fase la computazione è conclusa per tutte le I iterazioni quind
     mpirun -np [numero di processori] parallel [numero di particelle]
     esempio -> mpirun -np 4 parallel 1000
 ```
+**ASSICURARSI CHE IL FILE DA CUI VENGONO LETTE LE PARTICELLE SIA STATO CREATO**
 
 # Correttezza
 
@@ -172,7 +226,7 @@ In quest'ultima fase la computazione è conclusa per tutte le I iterazioni quind
     esempio -> mpirun -np 1 parallel 1000
     ```
 
-- L'output della versione sequenziale verrà scritto sul file *(sequential_output.txt)*. E' stato poi realizzato un programma *(output_correctness.c)* che mette a confronto il contenuto del file con l'output sequenziale e del file con l'output parallelo per verificarne la correttezza.
+- Per eseguire il test di correttezza utilizziamo la versione sequenziale del programma. L'output della versione sequenziale verrà scritto sul file *(sequential_output.txt)*. E' stato poi realizzato un programma *(output_correctness.c)* che mette a confronto il contenuto del file con l'output sequenziale e del file con l'output parallelo per verificarne la correttezza.
 
 - Dopo aver eseguito il programma sia nella versione parallela che quella sequenziale come indicato precedentemente è possibile eseguire il test di correttezza nel seguente modo:
 
