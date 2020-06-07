@@ -1,5 +1,5 @@
 
-| N-Body Simulation | Nicola De Cristofaro | 05/06/2020 |
+| N-Body Simulation | Nicola De Cristofaro (Matr. 0522500876) | 07/06/2020 |
 | --- | --- | --- |
 
 # Descrizione del problema
