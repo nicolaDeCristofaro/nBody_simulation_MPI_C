@@ -1,6 +1,6 @@
 
-| N-Body Simulation | Nicola De Cristofaro (Matr. 0522500876) | 07/06/2020 |
-| --- | --- | --- |
+| N-Body Simulation | Nicola De Cristofaro |
+| --- | --- |
 
 # Descrizione del problema
 In fisica, il problema n-body consiste nel predire i singoli movimenti di un gruppo di oggetti celesti che interagiscono tra loro in modo gravitazionale. La risoluzione di questo problema è stata motivata dal desiderio di comprendere i movimenti del Sole, della Luna, dei pianeti e delle stelle visibili.
@@ -95,84 +95,59 @@ Viene quindi eseguita la funzione per distribuire equamente il lavoro tra i proc
         }
 ```
 
-2. Il processore MASTER spedisce inoltre a tutti i processorri la porzione di array la cui dimensione è stata calcolata in modo equo al passo precedente. **Da sottolineare che il processore MASTER non si occupa solo di gestire la comunicazione tra processori ma effettua anch'esso la computazione sulla sua porzione.**
+2. Ogni processore effettua la computazione sulla sua porzione di array la cui dimensione è stata calcolata in modo equo al passo precedente chiamando la funzione *bodyForce* che permette di calcolare i nuovi valori di posizione e velocità di ogni particella. **Da sottolineare che il processore MASTER non si occupa solo di gestire la comunicazione tra processori ma effettua anch'esso la computazione sulla sua porzione.** 
 
 ```c
-    MPI_Scatterv(particles, dim_portions, displ, particle_type,my_portion, dim_portions[myrank], particle_type,MASTER, MPI_COMM_WORLD);
-```
-dove:
-  - **particles**: indirizzo del buffer di invio (array di tutte le particelle)
-  - **dim_portions**: array di interi che specifica il numero di elementi da inviare ad ogni processore
-  - **displ**: array di interi in cui l'indice i specifica l'offset (relativo a particles) da cui cominciare a prelevare i dati da inviare
-  - **particle_type**: tipo di dato degli elementi da inviare
-  - **my_portion**: indirizzo del buffer di ricezione (porzione di particelle)
-  - **dim_portions[myrank]**: numero di elementi della porzione che il processore deve ricevere
-  - **particle_type**: tipo di dato degli elementi da ricevere
-  - **MASTER**: rank del processore che invia
-  - **MPI_COMM_WORLD**: communicator
-
-3. Ogni processore effettua la computazione sulla sua porzione di array chiamando la funzione *bodyForce* che permette di calcolare i nuovi valori di posizione e velocità di ogni particella.
-
-```c
-    bodyForce(particles, my_portion, dt, dim_portions[myrank], num_particles );
+    bodyForce(particles, displ[myrank], dt, dim_portions[myrank], num_particles );
 ```
 
 - come possiamo vedere dal codice della funzione, ogni processore esegue la computazione su un sottoinsieme di particelle i cui valori vengono computati in base alla forza esercitata da tutte le altre particelle.
 
 ```c
     /*Funzione che esegue computazione su una specifica porzione di workload */
-    void bodyForce(Particle *all_particles, Particle *my_portion, float dt, int dim_portion, int num_particles) {
-        for (int i = 0; i < dim_portion; i++) { 
-            float Fx = 0.0f; float Fy = 0.0f; float Fz = 0.0f;
+    /*Funzione che esegue computazione su una specifica porzione di workload */
+void bodyForce(Particle *all_particles, int startOffsetPortion, float dt, int dim_portion, int num_particles) {
+    for (int i = 0; i < dim_portion; i++) { 
+        float Fx = 0.0f; float Fy = 0.0f; float Fz = 0.0f;
 
-            for (int j = 0; j < num_particles; j++) {
-                float dx = all_particles[j].x - my_portion[i].x;
-                float dy = all_particles[j].y - my_portion[i].y;
-                float dz = all_particles[j].z - my_portion[i].z;
-                float distSqr = dx*dx + dy*dy + dz*dz + SOFTENING;
-                float invDist = 1.0f / sqrtf(distSqr);
-                float invDist3 = invDist * invDist * invDist;
+        for (int j = 0; j < num_particles; j++) {
+            float dx = all_particles[j].x - all_particles[startOffsetPortion + i].x;
+            float dy = all_particles[j].y - all_particles[startOffsetPortion + i].y;
+            float dz = all_particles[j].z - all_particles[startOffsetPortion + i].z;
+            float distSqr = dx*dx + dy*dy + dz*dz + SOFTENING;
+            float invDist = 1.0f / sqrtf(distSqr);
+            float invDist3 = invDist * invDist * invDist;
 
-                Fx += dx * invDist3; Fy += dy * invDist3; Fz += dz * invDist3;
-            }
-
-            my_portion[i].vx += dt * Fx; 
-            my_portion[i].vy += dt * Fy; 
-            my_portion[i].vz += dt * Fz;
+            Fx += dx * invDist3; Fy += dy * invDist3; Fz += dz * invDist3;
         }
 
-        //Integro le posizioni della mia porzione
-        for(int i = 0; i < dim_portion; i++) {
-            my_portion[i].x += my_portion[i].vx * dt;
-            my_portion[i].y += my_portion[i].vy * dt;
-            my_portion[i].z += my_portion[i].vz * dt;
-        }
+        all_particles[startOffsetPortion + i].vx += dt * Fx; 
+        all_particles[startOffsetPortion + i].vy += dt * Fy; 
+        all_particles[startOffsetPortion + i].vz += dt * Fz;
     }
+
+    //Integro le posizioni della mia porzione
+    for(int i = 0; i < dim_portion; i++) {
+        all_particles[startOffsetPortion + i].x += all_particles[startOffsetPortion + i].vx * dt;
+        all_particles[startOffsetPortion + i].y += all_particles[startOffsetPortion + i].vy * dt;
+        all_particles[startOffsetPortion + i].z += all_particles[startOffsetPortion + i].vz * dt;
+    }
+}
 ```
 
-4. Ogni processore spedisce al MASTER la propria porzione computata quindi dopo questa operazione di gathering il processore MASTER ha l'array di particelle completo e computato per una certa iterazione.
+3. Ogni processore spedisce al MASTER la propria porzione computata quindi, dopo questa operazione di gathering, il processore MASTER ha l'array di particelle completo e computato per una certa iterazione.
 
 ```c
-    MPI_Gatherv(my_portion, dim_portions[myrank], particle_type, gathered_particles, dim_portions, displ, particle_type,MASTER, MPI_COMM_WORLD);
+    MPI_Gatherv(particles + displ[myrank], dim_portions[myrank], particle_type, gathered_particles, dim_portions, displ, particle_type,MASTER, MPI_COMM_WORLD);
 ```
-dove:
-  - **my_portion**: indirizzo del buffer di invio (porzione di particelle computata)
-  - **dim_portions[myrank]**: numero di elementi della porzione da inviare
-  - **particle_type**: tipo di dato degli elementi da inviare
-  - **gathered_particles**: indirizzo del buffer di ricezione (array di tutte le particelle computate)
-  - **dim_portions**: array di interi che specifica il numero di elementi da ricevere da ogni processore
-  - **displ**: array di interi in cui l'indice i specifica l'offset (relativo a my_portion) da cui cominciare a inserire i dati ricevuti
-  - **particle_type**: tipo di dato degli elementi da ricevere
-  - **MASTER**: rank del processore ricevente
-  - **MPI_COMM_WORLD**: communicator
 
-5. L'input della successiva iterazione dovrà essere l'array di particelle computato nell'iterazione corrente quindi dato che il processore MASTER possiede l'array di particelle computato in *gathered_particles* viene effettuato uno swap.
+4. L'input della successiva iterazione dovrà essere l'array di particelle computato nell'iterazione corrente quindi dato che il processore MASTER possiede l'array di particelle computato in *gathered_particles* viene effettuato uno swap.
 
 ```c
     if(myrank == MASTER) particles = gathered_particles;
 ```
 
-6. Infine per ogni iterazione viene preso il tempo di esecuzione e il processore MASTER provvede a scrivere su stdout lo stato di avanzamento della computazione e il tempo impiegato per quella iterazione.
+5. Infine per ogni iterazione viene preso il tempo di esecuzione e il processore MASTER provvede a scrivere su stdout lo stato di avanzamento della computazione e il tempo impiegato per quella iterazione.
 
 ```c
     MPI_Barrier(MPI_COMM_WORLD);

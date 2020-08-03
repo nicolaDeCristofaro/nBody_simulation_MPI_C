@@ -18,7 +18,7 @@ typedef struct {
 
 //Definizione delle funzioni
 void compute_equal_workload_for_each_task(int *dim_portions, int *displs, int arraysize, int numtasks);
-void bodyForce(Particle *all_particles, Particle *my_portion, float dt, int dim_portion, int num_particles);
+void bodyForce(Particle *all_particles, int startOffsetPortion, float dt, int dim_portion, int num_particles);
 int convertStringToInt(char *str);
 
 
@@ -106,13 +106,10 @@ int main(int argc, char* argv[]){
             MPI_Bcast(particles, num_particles, particle_type, MASTER, MPI_COMM_WORLD);
         }
 
-        /*** Distribuzione delle porzioni ai vari processi ***/
-        MPI_Scatterv(particles, dim_portions, displ, particle_type,my_portion, dim_portions[myrank], particle_type,MASTER, MPI_COMM_WORLD);
-
-        bodyForce(particles, my_portion, dt, dim_portions[myrank], num_particles );
+        bodyForce(particles, displ[myrank], dt, dim_portions[myrank], num_particles );
 
         /*** Gathering della porzione computata da ogni processo ***/
-        MPI_Gatherv(my_portion, dim_portions[myrank], particle_type, gathered_particles, dim_portions, displ, particle_type,MASTER, MPI_COMM_WORLD);
+        MPI_Gatherv(particles + displ[myrank], dim_portions[myrank], particle_type, gathered_particles, dim_portions, displ, particle_type,MASTER, MPI_COMM_WORLD);
 
         if(myrank == MASTER) particles = gathered_particles;
 
@@ -180,14 +177,14 @@ void compute_equal_workload_for_each_task(int *dim_portions, int *displs, int ar
 }
 
 /*Funzione che esegue computazione su una specifica porzione di workload */
-void bodyForce(Particle *all_particles, Particle *my_portion, float dt, int dim_portion, int num_particles) {
+void bodyForce(Particle *all_particles, int startOffsetPortion, float dt, int dim_portion, int num_particles) {
     for (int i = 0; i < dim_portion; i++) { 
         float Fx = 0.0f; float Fy = 0.0f; float Fz = 0.0f;
 
         for (int j = 0; j < num_particles; j++) {
-            float dx = all_particles[j].x - my_portion[i].x;
-            float dy = all_particles[j].y - my_portion[i].y;
-            float dz = all_particles[j].z - my_portion[i].z;
+            float dx = all_particles[j].x - all_particles[startOffsetPortion + i].x;
+            float dy = all_particles[j].y - all_particles[startOffsetPortion + i].y;
+            float dz = all_particles[j].z - all_particles[startOffsetPortion + i].z;
             float distSqr = dx*dx + dy*dy + dz*dz + SOFTENING;
             float invDist = 1.0f / sqrtf(distSqr);
             float invDist3 = invDist * invDist * invDist;
@@ -195,16 +192,16 @@ void bodyForce(Particle *all_particles, Particle *my_portion, float dt, int dim_
             Fx += dx * invDist3; Fy += dy * invDist3; Fz += dz * invDist3;
         }
 
-        my_portion[i].vx += dt * Fx; 
-        my_portion[i].vy += dt * Fy; 
-        my_portion[i].vz += dt * Fz;
+        all_particles[startOffsetPortion + i].vx += dt * Fx; 
+        all_particles[startOffsetPortion + i].vy += dt * Fy; 
+        all_particles[startOffsetPortion + i].vz += dt * Fz;
     }
 
     //Integro le posizioni della mia porzione
     for(int i = 0; i < dim_portion; i++) {
-        my_portion[i].x += my_portion[i].vx * dt;
-        my_portion[i].y += my_portion[i].vy * dt;
-        my_portion[i].z += my_portion[i].vz * dt;
+        all_particles[startOffsetPortion + i].x += all_particles[startOffsetPortion + i].vx * dt;
+        all_particles[startOffsetPortion + i].y += all_particles[startOffsetPortion + i].vy * dt;
+        all_particles[startOffsetPortion + i].z += all_particles[startOffsetPortion + i].vz * dt;
     }
 }
 
