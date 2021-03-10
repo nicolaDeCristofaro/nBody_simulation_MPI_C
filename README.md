@@ -2,42 +2,50 @@
 | N-Body Simulation | Nicola De Cristofaro |
 | --- | --- |
 
-# Descrizione del problema
-In fisica, il problema n-body consiste nel predire i singoli movimenti di un gruppo di oggetti celesti che interagiscono tra loro in modo gravitazionale. La risoluzione di questo problema è stata motivata dal desiderio di comprendere i movimenti del Sole, della Luna, dei pianeti e delle stelle visibili.
+# Problem Description
+In physics, the n-body problem consists in predicting the individual movements of a group of celestial objects that interact with each other in a gravitational way. The resolution of this problem was motivated by the desire to understand the movements of the Sun, Moon, planets and visible stars.
 
 <div style="text-align:center">
     <img alt="nBodySimulation1" src="./images/nbody1.gif" height="232" width="328"/>
     <img alt="nBodySimulation2" src="./images/nbody2.gif" height="232" width="328"/>
 </div>
 
-# Descrizione della soluzione
-Per trovare la soluzione a questo problema è possibile simulare il comportamento delle particelle, ognuna avente una massa, una posizione e una velocità iniziale. La simulazione consentirà di calcolare la posizione e la velocità di ciascuna particella al termine di un intervallo di tempo determinato.
+# Solution Description
+To find the solution to this problem, it is possible to simulate the behavior of particles, each having an initial mass, position and velocity. The simulation will allow you to calculate the position and speed of each particle at the end of a given time interval.
 
-La soluzione proposta ha una complessità quadratica rispetto alla taglia dell'input (il numero di particelle). Esiste un tipo di simulazione, detta di Barnes – Hut che è più efficiente poichè tramite approssimazioni riesce ad eseguire con ordine O(n log n) ma è più complessa da implementare perciò si è preferito considerare la soluzione di complessità quadratica più semplice e concentrarsi sui concetti della programmazione parallela.
+The proposed solution has a quadratic complexity with respect to the size of the input (the number of particles). There is a type of simulation, called Barnes - Hut, which is more efficient as it is able to execute with order O (n log n) through approximations but it is more complex to implement therefore it was preferred to consider the simpler quadratic complexity solution and concentrate on concepts of parallel programming.
 
-# Struttura della soluzione
+# Software used
 
-## Inizializzazione
-Per la fase di inizializzazione è stata adottata la tecnica di creare le particelle in un file e inizializzarle usando un algoritmo deterministico per randomizzare i valori delle particelle. In questo modo tutti i processori alla prima iterazione della computazione partono leggendo da questo file *(particles.txt)*.
+- <b> Message Passing Interface (MPI) </b>:  A library used to allow several different processors on a cluster to communicate with each other. In other words, the goal of the Message Passing Interface is to provide a widely used standard for writing message-passing programs.
 
-Per la creazione e inizializzazione delle particelle eseguire i seguenti comandi:
+- <b> C language</b>
+
+- <b> Amazon Web Services (AWS)</b>: to test the parallel program on a cluster of virtual machine create on AWS Cloud environment. 
+
+# Solution Structure
+
+## Initialization
+For the initialization phase, the technique of creating the particles in a file and initializing them using a deterministic algorithm to randomize the values of the particles was adopted. In this way all the processors at the first iteration of the computation start reading from this file *(particles.txt)*.
+
+To create and initialize the particles, execute the following commands:
 
 1. ```bash
     gcc -o initialization particles_production.c
     ```
 2. ```bash
-    ./initialization [numero di particelle] (esempio -> ./initialization 1000)
+    ./initialization [number of particles] (example -> ./initialization 1000)
     ```
 
-## Inizializzazione di MPI, variabili e allocazione memoria
-La prima parte del programma si occupa della definizione di variabili utili alla computazione, variabili per prendere i tempi di esecuzione e infine variabili per l'uso di MPI. Oltre alle operazioni sempre presenti come MPI_Init, MPI_Comm_size per conoscere il numero di processori che stanno eseguendo o MPI_Comm_rank per conoscere il rank del processore corrente, è stata fatta un'altra operazione per creare un tipo di dato derivato al fine di permettere la comunicazione tra i processori del tipo di dato Particle.
+## MPI Initialization, variables and memory allocation
+The first part of the program deals with the definition of variables useful for computation, variables to take execution times and finally variables for the use of MPI. In addition to the operations always present such as MPI_Init, MPI_Comm_size to know the number of processors that are running or MPI_Comm_rank to know the current processor rank, another operation was made to create a derived data type in order to allow communication between processors of the <b>Particle</b> data type.
 
 ```c
     MPI_Type_contiguous(7, MPI_FLOAT, &particle_type);
     MPI_Type_commit(&particle_type);
 ```
 
-dove la struttura Particle è la seguente:
+where the struct Particle is the following:
 
 ```c
     typedef struct {
