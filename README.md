@@ -56,7 +56,7 @@ where the struct Particle is the following:
 ```
 
 ## Equal distribution of workload between processors
-The function is then performed to distribute the work equally among the processors. After executing this function in the <b> dim_portions * array each index is associated with the rank of a processor and its contents represent the size of the portion of the array on which that processor will have to compute. Furthermore, the array of displacements is set in which each index represents the start_offset of a processor.
+The function is then performed to distribute the work equally among the processors. After executing this function in the <b> dim_portions </b> array each index is associated with the rank of a processor and its contents represent the size of the portion of the array on which that processor will have to compute. Furthermore, the array of displacements is set in which each index represents the start_offset of a processor.
 
 ```c
     void compute_equal_workload_for_each_task(int *dim_portions, int *displs, int arraysize, int numtasks){
@@ -100,7 +100,7 @@ The function is then performed to distribute the work equally among the processo
         }
 ```
 
-2. Each processor performs the computation on its portion of the array whose size was calculated fairly in the previous step by calling the <b> bodyForce * function which allows to calculate the new position and velocity values of each particle. <b> It should be emphasized that the MASTER processor does not only manage the communication between processors but also performs the computation on its portion. **
+2. Each processor performs the computation on its portion of the array whose size was calculated fairly in the previous step by calling the <b> bodyForce </b> function which allows to calculate the new position and velocity values of each particle. <b> It should be emphasized that the MASTER processor does not only manage the communication between processors but also performs the computation on its portion. </b>
 
 ```c
     bodyForce(particles, displ[myrank], dt, dim_portions[myrank], num_particles );
@@ -145,7 +145,7 @@ void bodyForce(Particle *all_particles, int startOffsetPortion, float dt, int di
     MPI_Gatherv(particles + displ[myrank], dim_portions[myrank], particle_type, gathered_particles, dim_portions, displ, particle_type,MASTER, MPI_COMM_WORLD);
 ```
 
-4. The input of the next iteration must be the particle array computed in the current iteration so since the MASTER processor owns the particle array computed in <b> gathered_particles * a swap is performed.
+4. The input of the next iteration must be the particle array computed in the current iteration so since the MASTER processor owns the particle array computed in <b> gathered_particles </b> a swap is performed.
 
 ```c
     if(myrank == MASTER) particles = gathered_particles;
@@ -178,11 +178,11 @@ In this last phase the computation is completed for all the iterations, then all
     mpirun -np [number of processors] parallel [number of particles]
     example -> mpirun -np 4 parallel 1000
 ```
-** MAKE SURE THE FILE FROM WHICH PARTICLES ARE READ HAS BEEN CREATED **
+<b> MAKE SURE THE FILE FROM WHICH PARTICLES ARE READ HAS BEEN CREATED </b>
 
 # Correctness
 
-- For the correctness of a parallel program it is necessary that the execution with P processors or with a single processor, with the same input produces the same output. To verify this condition, the output of the parallel multi-processor execution was written to file <b> (parallel_output.txt) *.
+- For the correctness of a parallel program it is necessary that the execution with P processors or with a single processor, with the same input produces the same output. To verify this condition, the output of the parallel multi-processor execution was written to file <b> (parallel_output.txt) </b>.
 
 - We now run the sequential version of the program which can be run either using the parallel version on 1 processor, or using the sequential version which also avoids the initialization and finalization of MPI.
 
@@ -205,7 +205,7 @@ In this last phase the computation is completed for all the iterations, then all
     example -> mpirun -np 1 parallel 1000
     ```
 
-- To perform the correctness test we use the sequential version of the program. The output of the sequential version will be written to the file <b> (sequential_output.txt) *. A program <b> (output_correctness.c) * was then created that compares the contents of the file with the sequential output and of the file with the parallel output to verify its correctness.
+- To perform the correctness test we use the sequential version of the program. The output of the sequential version will be written to the file <b> (sequential_output.txt) </b>. A program <b> (output_correctness.c) </b> was then created that compares the contents of the file with the sequential output and of the file with the parallel output to verify its correctness.
 
 - After running the program in both the parallel and sequential versions as indicated above, it is possible to perform the correctness test as follows:
 
@@ -234,15 +234,15 @@ int compare_float(float f1, float f2){
 }
 ```
 
-- <b> Graphic display of the correctness of the parallel solution on small input (5) **
+- <b> Graphic display of the correctness of the parallel solution on small input (5) </b>
 - 
 ![](./images/correctness_5.png)
 
 # Problem evaluation and Benchmarks
 
-To evaluate the performance of the proposed solution, some versions of the programs have been created <b> (sequential: sequential_nBody_benchmarking.c - parallel: parallel_nBody_benchmarking.c) ** slightly revised, since to perform a better benchmarking the writing of the final output has been eliminated on file to focus on computation time.
+To evaluate the performance of the proposed solution, some versions of the programs have been created <b> (sequential: sequential_nBody_benchmarking.c - parallel: parallel_nBody_benchmarking.c) </b> slightly revised, since to perform a better benchmarking the writing of the final output has been eliminated on file to focus on computation time.
 
-We can now proceed with the description of the results given by measuring the scalability of the application. There are two basic ways to measure the parallel performance of an application: <b> strong and weak scaling **.
+We can now proceed with the description of the results given by measuring the scalability of the application. There are two basic ways to measure the parallel performance of an application: <b> strong and weak scaling </b>.
 
 ## Strong Scaling
 
@@ -250,7 +250,7 @@ In this type of measurement the size of the problem (the number of particles) re
 
 ![](./benchmarking_screenshots/instances_32.png)
 
-<b> For the strong scaling test the range of increase in the number of processors has been fixed from 1 to 32 as 32 is the maximum number of cores that can be used with an AWS Educate account **
+<b> For the strong scaling test the range of increase in the number of processors has been fixed from 1 to 32 as 32 is the maximum number of cores that can be used with an AWS Educate account </b>
 
 ![](./benchmarking_screenshots/cpu_32_limit.png)
 
@@ -291,7 +291,7 @@ In this type of measurement the size of the problem (the number of particles) re
 
 ![](./benchmarking_screenshots/strong_scaling_screenshots/strong_scaling_graph.png)
 
-From the measurements carried out to verify the <b> strong scalability ** we noticed how on the same input size, the addition of processors improved the execution time, but obviously for each processor added the improvement was not constant as more processors participated to computation, the greater was the overhead produced by the communication of these. In our test up to 32 processors the execution time always decreased but the more the number of processors increased the more the performance improvement decreased. If we had moved on, adding more processors we would have reached a point where the running time no longer decreased, but began to increase as the overhead produced was greater than the performance improvement.
+From the measurements carried out to verify the <b> strong scalability </b> we noticed how on the same input size, the addition of processors improved the execution time, but obviously for each processor added the improvement was not constant as more processors participated to computation, the greater was the overhead produced by the communication of these. In our test up to 32 processors the execution time always decreased but the more the number of processors increased the more the performance improvement decreased. If we had moved on, adding more processors we would have reached a point where the running time no longer decreased, but began to increase as the overhead produced was greater than the performance improvement.
 
 ## Weak Scaling
 
@@ -323,7 +323,7 @@ The ideal graph of the <b> weak scalability ** performance would be a straight l
 ## Speedup and efficiency
 Speedup is another performance measurement metric that represents the performance improvement of a program due to running parallel versus sequential.
 
-Usually the best we can hope for is to divide the work between the processors without adding additional extra work time. In such a situation if we run our program with P processors then the program will execute P times faster than the sequential program. If this happens let's say the parallel program has ** linear speedup **.
+Usually the best we can hope for is to divide the work between the processors without adding additional extra work time. In such a situation if we run our program with P processors then the program will execute P times faster than the sequential program. If this happens let's say the parallel program has <b> linear speedup </b>.
 
 In practice, it is difficult to obtain this type of speedup as the use of more processors introduces in most cases an "overhead" time, ie an extra time mainly used for communication operations between the processors.
 
@@ -383,7 +383,7 @@ dove :
 
 ![](./benchmarking_screenshots/efficiency.png)
 
-We noticed how, surprisingly, both the ** speedup ** and the ** efficiency ** have always been very close to the ideal, this is because they are calculated according to how many operations we can perform in parallel and in our case we had excellent results since, except for a few more instructions executed by the MASTER processor, all the program instructions were executed in parallel.
+We noticed how, surprisingly, both the <b> speedup </b> and the <b> efficiency </b> have always been very close to the ideal, this is because they are calculated according to how many operations we can perform in parallel and in our case we had excellent results since, except for a few more instructions executed by the MASTER processor, all the program instructions were executed in parallel.
 
 Furthermore, the communication between the processors is carried out entirely using the collective communication functions of the MPI library and this is another factor that improves the performance as it makes sure that any node with the information received participates in sending the information to other nodes.
 
