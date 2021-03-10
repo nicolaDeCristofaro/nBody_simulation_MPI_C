@@ -55,8 +55,8 @@ where the struct Particle is the following:
     } Particle;
 ```
 
-## Distribuzione equa del workload tra i processori
-Viene quindi eseguita la funzione per distribuire equamente il lavoro tra i processori. Dopo l'esecuzione di questa funzione nell'array *dim_portions* ogni indice è associato al rank di un processore e il suo contenuto rappresenta la dimensione della porzione di array su cui quel processore dovrà computare. Inoltre viene impostato l'array dei displacements in cui ogni indice rappresenta lo start_offset di un processore.
+## Equal distribution of workload between processors
+The function is then performed to distribute the work equally among the processors. After executing this function in the * dim_portions * array each index is associated with the rank of a processor and its contents represent the size of the portion of the array on which that processor will have to compute. Furthermore, the array of displacements is set in which each index represents the start_offset of a processor.
 
 ```c
     void compute_equal_workload_for_each_task(int *dim_portions, int *displs, int arraysize, int numtasks){
@@ -74,46 +74,42 @@ Viene quindi eseguita la funzione per distribuire equamente il lavoro tra i proc
     }
 ```
 
-## Computazione e comunicazione tra i processori
+## Computing and communication between processors
 
-- La simulazione avviene per un certo numero di iterazioni I impostato a 10. Inoltre consideriamo il processore con rank 0 il processore MASTER mentre gli altri vengono considerati SLAVES.
+- The simulation takes place for a certain number of iterations I set to 10. Furthermore we consider the processor with rank 0 the MASTER processor while the others are considered SLAVES.
 
-- Le operazioni effettuate in ogni iterazione sono le seguenti:
+- The operations carried out in each iteration are the following:
 
-1. Solo nella prima iterazione tutti i processori leggono lo stato iniziale delle particelle dal file. Se invece non è la prima iterazione significa che il processore MASTER ha l'array di particelle aggiornato dopo la computazione dell'iterazione precedente quindi lo spedisce in broadcast a tutti gli altri processori per la nuova computazione.
+1. In the first iteration only, all processors read the initial state of the particles from the file. If, on the other hand, it is not the first iteration, it means that the MASTER processor has the particle array updated after the computation of the previous iteration, so it broadcasts it to all the other processors for the new computation.
 
 ```c
         if(iteration == 0){
-            //E' la prima iterazione quindi tutti i processori possono leggere lo stato iniziale delle particelle da file
+            //First iteration: all the procecssors can read the initial state of the particles form file
             FILE *fileRead = fopen("particles.txt", "r");
             if (fileRead == NULL){
-                /* Impossibile aprire il file */
-                printf("\nImpossibile aprire il file.\n");
+                /* Impossible to open the file */
+                printf("\nImpossible to open the file.\n");
                 exit(EXIT_FAILURE);
             }
-
-            /* Check errori sul numero di particelle lette */
-            // ...
 
             fread(particles, sizeof(Particle) * num_particles, 1, fileRead);
             fclose(fileRead);
         }else{
-            //il processore MASTER ha l'array di particelle output della computazine precedente quindi spedisce in broadcast
+            //MASTER processor has the output particle array of the previous computation so it broadcasts
             MPI_Bcast(particles, num_particles, particle_type, MASTER, MPI_COMM_WORLD);
         }
 ```
 
-2. Ogni processore effettua la computazione sulla sua porzione di array la cui dimensione è stata calcolata in modo equo al passo precedente chiamando la funzione *bodyForce* che permette di calcolare i nuovi valori di posizione e velocità di ogni particella. **Da sottolineare che il processore MASTER non si occupa solo di gestire la comunicazione tra processori ma effettua anch'esso la computazione sulla sua porzione.** 
+2. Each processor performs the computation on its portion of the array whose size was calculated fairly in the previous step by calling the * bodyForce * function which allows to calculate the new position and velocity values of each particle. ** It should be emphasized that the MASTER processor does not only manage the communication between processors but also performs the computation on its portion. **
 
 ```c
     bodyForce(particles, displ[myrank], dt, dim_portions[myrank], num_particles );
 ```
 
-- come possiamo vedere dal codice della funzione, ogni processore esegue la computazione su un sottoinsieme di particelle i cui valori vengono computati in base alla forza esercitata da tutte le altre particelle.
+- as we can see from the function code, each processor performs the computation on a subset of particles whose values are computed based on the force exerted by all the other particles.
 
 ```c
-    /*Funzione che esegue computazione su una specifica porzione di workload */
-    /*Funzione che esegue computazione su una specifica porzione di workload */
+ /*Function that performs computation on a specific portion of the workload */
 void bodyForce(Particle *all_particles, int startOffsetPortion, float dt, int dim_portion, int num_particles) {
     for (int i = 0; i < dim_portion; i++) { 
         float Fx = 0.0f; float Fy = 0.0f; float Fz = 0.0f;
@@ -134,7 +130,7 @@ void bodyForce(Particle *all_particles, int startOffsetPortion, float dt, int di
         all_particles[startOffsetPortion + i].vz += dt * Fz;
     }
 
-    //Integro le posizioni della mia porzione
+    //Integration of the positions of my portion
     for(int i = 0; i < dim_portion; i++) {
         all_particles[startOffsetPortion + i].x += all_particles[startOffsetPortion + i].vx * dt;
         all_particles[startOffsetPortion + i].y += all_particles[startOffsetPortion + i].vy * dt;
@@ -143,19 +139,19 @@ void bodyForce(Particle *all_particles, int startOffsetPortion, float dt, int di
 }
 ```
 
-3. Ogni processore spedisce al MASTER la propria porzione computata quindi, dopo questa operazione di gathering, il processore MASTER ha l'array di particelle completo e computato per una certa iterazione.
+3. Each processor sends its computed portion to the MASTER so, after this gathering operation, the MASTER processor has the particle array complete and computed for a certain iteration.
 
 ```c
     MPI_Gatherv(particles + displ[myrank], dim_portions[myrank], particle_type, gathered_particles, dim_portions, displ, particle_type,MASTER, MPI_COMM_WORLD);
 ```
 
-4. L'input della successiva iterazione dovrà essere l'array di particelle computato nell'iterazione corrente quindi dato che il processore MASTER possiede l'array di particelle computato in *gathered_particles* viene effettuato uno swap.
+4. The input of the next iteration must be the particle array computed in the current iteration so since the MASTER processor owns the particle array computed in * gathered_particles * a swap is performed.
 
 ```c
     if(myrank == MASTER) particles = gathered_particles;
 ```
 
-5. Infine per ogni iterazione viene preso il tempo di esecuzione e il processore MASTER provvede a scrivere su stdout lo stato di avanzamento della computazione e il tempo impiegato per quella iterazione.
+5. Finally, for each iteration the execution time is taken and the MASTER processor writes on stdout the progress of the computation and the time taken for that iteration.
 
 ```c
     MPI_Barrier(MPI_COMM_WORLD);
@@ -164,11 +160,11 @@ void bodyForce(Particle *all_particles, int startOffsetPortion, float dt, int di
     ...
     MPI_Barrier(MPI_COMM_WORLD);  
     iterEnd = MPI_Wtime();
-    if(myrank == MASTER) printf("Iterazione %d di %d completata in %f seconds\n", iteration+1, I, (iterEnd-iterStart));
+    if(myrank == MASTER) printf("Iteration %d of %d completed in %f seconds\n", iteration+1, I, (iterEnd-iterStart));
 ```
 
-## Finalizzazione e deallocazione
-In quest'ultima fase la computazione è conclusa per tutte le I iterazioni quindi viene deallocata tutta la memoria precedentemente allocata, viene finalizzato MPI con MPI_Finalize() e il processore MASTER provvede a scrivere su stdout il tempo medio di esecuzione di un'iterazione e il tempo totale di esecuzione, scrivendo inoltre lo stato finale delle particelle su un file per un eventuale test di correttezza fatto in seguito.
+## Finalization and deallocation
+In this last phase the computation is completed for all the iterations, then all the memory previously allocated is deallocated, MPI is finalized with MPI_Finalize () and the MASTER processor writes the average execution time of an iteration to stdout and the total execution time, also writing the final state of the particles on a file for a possible correctness test done later.
 
 ## Compilazione ed esecuzione
 
