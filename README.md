@@ -166,63 +166,63 @@ void bodyForce(Particle *all_particles, int startOffsetPortion, float dt, int di
 ## Finalization and deallocation
 In this last phase the computation is completed for all the iterations, then all the memory previously allocated is deallocated, MPI is finalized with MPI_Finalize () and the MASTER processor writes the average execution time of an iteration to stdout and the total execution time, also writing the final state of the particles on a file for a possible correctness test done later.
 
-## Compilazione ed esecuzione
+## Compilation and execution
 
-#### Compilazione 
+#### Compilation 
 ```bash
     mpicc -o parallel parallel_nBody.c -lm
 ```
 
-#### Esecuzione 
+#### Execution 
 ```bash
-    mpirun -np [numero di processori] parallel [numero di particelle]
-    esempio -> mpirun -np 4 parallel 1000
+    mpirun -np [number of processors] parallel [number of particles]
+    example -> mpirun -np 4 parallel 1000
 ```
-**ASSICURARSI CHE IL FILE DA CUI VENGONO LETTE LE PARTICELLE SIA STATO CREATO**
+** MAKE SURE THE FILE FROM WHICH PARTICLES ARE READ HAS BEEN CREATED **
 
-# Correttezza
+# Correctness
 
-- Per la correttezza di un programma in parallelo è necessario che l'esecuzione con P processori o con un solo processore, con lo stesso input produca lo stesso output. Per verificare questa condizione è stato fatto in modo che l'output dell'esecuzione parallela con più processori sia stato scritto su file *(parallel_output.txt)*.
+- For the correctness of a parallel program it is necessary that the execution with P processors or with a single processor, with the same input produces the same output. To verify this condition, the output of the parallel multi-processor execution was written to file * (parallel_output.txt) *.
 
-- Eseguiamo ora la versione sequenziale del programma che può essere eseguita sia utilizzando la versione parallela su 1 processore, sia utilizzando la versione sequenziale che evita anche l'inizializzazione e finalizzazione di MPI.
+- We now run the sequential version of the program which can be run either using the parallel version on 1 processor, or using the sequential version which also avoids the initialization and finalization of MPI.
 
 1. ```bash
     gcc -o sequential sequential_nBody.c -lm
     ```
 
 2. ```bash
-    ./sequential [numero di particelle] 
-    esempio -> ./sequential 1000
+    ./sequential [number of particles] 
+    example -> ./sequential 1000
     ```
-    **OPPURE**
+    **OR**
 
  1. ```bash
     mpicc -o parallel parallel_nBody.c -lm
     ```
 
 2. ```bash
-    mpirun -np 1 parallel [numero di particelle]
-    esempio -> mpirun -np 1 parallel 1000
+    mpirun -np 1 parallel [number of particles] 
+    example -> mpirun -np 1 parallel 1000
     ```
 
-- Per eseguire il test di correttezza utilizziamo la versione sequenziale del programma. L'output della versione sequenziale verrà scritto sul file *(sequential_output.txt)*. E' stato poi realizzato un programma *(output_correctness.c)* che mette a confronto il contenuto del file con l'output sequenziale e del file con l'output parallelo per verificarne la correttezza.
+- To perform the correctness test we use the sequential version of the program. The output of the sequential version will be written to the file * (sequential_output.txt) *. A program * (output_correctness.c) * was then created that compares the contents of the file with the sequential output and of the file with the parallel output to verify its correctness.
 
-- Dopo aver eseguito il programma sia nella versione parallela che quella sequenziale come indicato precedentemente è possibile eseguire il test di correttezza nel seguente modo:
+- After running the program in both the parallel and sequential versions as indicated above, it is possible to perform the correctness test as follows:
 
 1. ```bash
     gcc -o correctness output_correctness.c
     ```
 
 2. ```bash
-    ./correctness [numero di particelle] (esempio -> ./correctness 1000)
+    ./correctness [number of particles] (example -> ./correctness 1000)
     ```
 
-- Da sottolineare che per quanto riguarda i confronti tra gli attributi delle particelle per stabilirne la correttezza è stata utilizzata una funzione per confrontare i valori float. Questo perchè la matematica in virgola mobile non è esatta. Valori semplici come 0,2 non possono essere rappresentati con precisione usando numeri binari in virgola mobile e questa precisione limitata dei numeri in virgola mobile significa che lievi variazioni nell'ordine delle operazioni possono cambiare il risultato. Quindi, dato che questi valori vengono memorizzati con precisioni diverse, i risultati possono differire. Di conseguenza se si eseguono vari calcoli e quindi si confrontano i risultati con un valore atteso, è altamente improbabile che si ottenga esattamente il risultato desiderato. Per questo motivo con la funzione realizzata possiamo esprimere il concetto che due valori abbastanza vicini tra loro possono essere considerati uguali.
+- It should be emphasized that as regards the comparisons between the attributes of the particles to establish their correctness, a special function was used to compare the float values. This is because floating point math is not exact. Simple values such as 0.2 cannot be accurately represented using floating point binary numbers, and this limited precision of floating point numbers means that slight variations in the order of operations can change the result. Therefore, since these values are stored with different accuracies, the results may differ. Consequently, if you perform various calculations and then compare the results with an expected value, it is highly unlikely that you will get exactly the desired result. For this reason, with the realized function we can express the concept that two values close enough to each other can be considered equal.
 
-- In pratica, due valori di tipo float sono considerati uguali se la loro differenza rientra in un certo limite o valore epsilon.
-
+- In practice, two float values are considered equal if their difference falls within a certain epsilon limit or value.
+- 
 ```c
-//confronta due float e ritorna 1 se sono uguali 0 altrimenti
+// compare two floats and return 1 if they are equal to 0 otherwise
 int compare_float(float f1, float f2){
 
     float precision = 0.01f;
@@ -234,23 +234,23 @@ int compare_float(float f1, float f2){
 }
 ```
 
-- **Visualizzazione grafica della correttezza della soluzione parallela su input piccolo (5)**
-
+- ** Graphic display of the correctness of the parallel solution on small input (5) **
+- 
 ![](./images/correctness_5.png)
 
 # Problem evaluation and Benchmarks
 
-Per la valutazione delle prestazioni della soluzione proposta sono state create delle versioni dei programmi **(sequenziale: sequential_nBody_benchmarking.c - parallela: parallel_nBody_benchmarking.c)** leggermente revisionate poichè per effettuare un migliore benchmarking è stata eliminata la scrittura dell'output finale su file per focalizzarci sul tempo computazione.
+To evaluate the performance of the proposed solution, some versions of the programs have been created ** (sequential: sequential_nBody_benchmarking.c - parallel: parallel_nBody_benchmarking.c) ** slightly revised, since to perform a better benchmarking the writing of the final output has been eliminated on file to focus on computation time.
 
-Possiamo ora procedere con la descrizione dei risultati dati dalla misurazione della scalabilità dell'applicazione. Ci sono due modi di base per misurare la performance parallela di un'applicazione: **strong e weak scaling**.
+We can now proceed with the description of the results given by measuring the scalability of the application. There are two basic ways to measure the parallel performance of an application: ** strong and weak scaling **.
 
 ## Strong Scaling
 
-In questo tipo di misurazione la taglia del problema (il numero di particelle) resta fissata ma il numero di processori aumenta. 
+In this type of measurement the size of the problem (the number of particles) remains fixed but the number of processors increases.
 
 ![](./benchmarking_screenshots/instances_32.png)
 
-**Per il testi di strong scaling il range di aumento del numero dei processori è stato fissato da 1 a 32 poichè 32 è il massimo numero di core che è possibile usare con un account AWS Educate**
+** For the strong scaling test the range of increase in the number of processors has been fixed from 1 to 32 as 32 is the maximum number of cores that can be used with an AWS Educate account **
 
 ![](./benchmarking_screenshots/cpu_32_limit.png)
 
@@ -291,11 +291,11 @@ In questo tipo di misurazione la taglia del problema (il numero di particelle) r
 
 ![](./benchmarking_screenshots/strong_scaling_screenshots/strong_scaling_graph.png)
 
-Dalle misurazioni effettuate per verificare la **strong scalability** abbiamo notato come su una stessa taglia di input, l'aggiunta di processori ha migliorato il tempo di esecuzione, ma ovviamente per ogni processore aggiunto il miglioramento non è stato costante poichè più processori partecipavano alla computazione, maggiore era l'overhead prodotto dalla comunicazione di questi. Nel nostro test fino a 32 processori il tempo di esecuzione è sempre diminuito ma più il numero di processori aumentava più il miglioramento delle prestazioni diminuiva. Se fossimo andati avanti, aggiungendo altri processori saremmo arrivati ad un punto in cui il tempo di esecuzione non diminuiva più, ma cominciava ad aumentare poichè l'overhead prodotto era maggiore del miglioramento di prestazioni.
+From the measurements carried out to verify the ** strong scalability ** we noticed how on the same input size, the addition of processors improved the execution time, but obviously for each processor added the improvement was not constant as more processors participated to computation, the greater was the overhead produced by the communication of these. In our test up to 32 processors the execution time always decreased but the more the number of processors increased the more the performance improvement decreased. If we had moved on, adding more processors we would have reached a point where the running time no longer decreased, but began to increase as the overhead produced was greater than the performance improvement.
 
 ## Weak Scaling
 
-In questo caso la taglia del problema aumenta con l'aumentare del numero di processori, facendo in modo che il workload sia sempre equamente distribuito tra i processori.
+In this case the size of the problem increases as the number of processors increases, ensuring that the workload is always equally distributed among the processors.
 
 |   P	|   N	|   Avg Iteration Time (seconds)	|   Total Computation Time (seconds)	|   Weak Scaling Efficiency (%)  |
 |:-:	|:-:	|:-:	|:-:	|:-:	|
@@ -318,7 +318,7 @@ In questo caso la taglia del problema aumenta con l'aumentare del numero di proc
 
 ![](./benchmarking_screenshots/weak_scaling_screenshots/weak_scaling_graphic.png)
 
-Il grafico ideale della performance di **weak scalability** sarebbe una linea retta poichè la taglia dell'input è aumentata in proporzione all'aumento del numero di processori, quindi essendo il workload sempre equamente distrubuito il tempo di computazione dovrebbe essere sempre lo stesso. Purtroppo questo non accade poichè, come abbiamo già detto, per ogni processore aggiunto viene prodotta una quantità maggiore di overhead, dovuto principalmente alla comunicazione tra i processori. Dal nostro esperimento abbiamo avuto comunque buoni risultati poichè con l'aumentare dei processori e della taglia dell'input (10.000 particelle in più per ogni processore aggiunto alla computazione) il tempo di esecuzione è aumentato in modo minimo e costante ad ogni step, rimanendo relativamente vicino all'ideale.
+The ideal graph of the ** weak scalability ** performance would be a straight line since the input size has increased in proportion to the increase in the number of processors, so since the workload is always equally distributed, the computation time should always be the same . Unfortunately this does not happen because, as we have already said, a greater amount of overhead is produced for each added processor, mainly due to the communication between the processors. However, from our experiment we had good results because with the increase of the processors and the input size (10,000 more particles for each processor added to the computation) the execution time has increased in a minimal and constant way at each step, remaining relatively close to ideal.
 
 ## Speedup ed efficienza
 Lo speedup è un'altra metrica di misurazione delle performance che rappresenta il miglioramento delle prestazioni di un programma dovuto a un'esecuzione parallela rispetto a una sequenziale.
